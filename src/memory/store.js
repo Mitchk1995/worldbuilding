@@ -12,6 +12,14 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function daysOld(isoString) {
+  const timestamp = Date.parse(isoString);
+  if (Number.isNaN(timestamp)) {
+    return null;
+  }
+  return Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+}
+
 function toJson(value) {
   return JSON.stringify(value ?? {});
 }
@@ -842,6 +850,7 @@ export class MemoryStore {
        ORDER BY updated_at DESC
        LIMIT ?`
     ).all(limit);
+    const memoryAudit = this.auditOperatorMemory();
 
     const lines = [
       "Operator Memory Brief",
@@ -878,6 +887,16 @@ export class MemoryStore {
           `- [${item.status}] ${item.id} (${item.risk_level}, review round ${item.review_round}): ${item.title}`
         );
       }
+    }
+
+    lines.push("", "Memory hygiene:");
+    lines.push(`- exact duplicates: ${memoryAudit.summary.exactDuplicates}`);
+    lines.push(`- likely duplicates: ${memoryAudit.summary.likelyDuplicates}`);
+    lines.push(
+      `- stale open records (> ${memoryAudit.summary.staleDays} days): ${memoryAudit.summary.staleOpenRecords}`
+    );
+    for (const item of memoryAudit.staleOpenRecords.slice(0, 3)) {
+      lines.push(`- stale ${item.lane}: ${item.label} (${item.ageDays} days old)`);
     }
 
     return this.#storeContextPack({
@@ -1026,27 +1045,41 @@ export class MemoryStore {
     return rows;
   }
 
-  auditOperatorMemory() {
+  auditOperatorMemory({ staleDays = 14 } = {}) {
     const steerings = this.listOperatorSteerings("open").map((item) => ({
       lane: "steering",
       id: item.id,
       label: item.kind,
-      text: `${item.kind} ${item.note}`
+      text: `${item.kind} ${item.note}`,
+      updatedAt: item.updated_at ?? item.created_at
     }));
     const failures = this.listOperatorFailures("open").map((item) => ({
       lane: "failure",
       id: item.id,
       label: item.title,
-      text: `${item.title} ${item.details}`
+      text: `${item.title} ${item.details}`,
+      updatedAt: item.updated_at ?? item.created_at
     }));
     const rows = [...steerings, ...failures];
     const exactDuplicates = [];
     const likelyDuplicates = [];
+    const staleOpenRecords = [];
     const exactSeen = new Set();
     const likelySeen = new Set();
+    const staleCutoffDays = Math.max(1, staleDays);
 
     for (let index = 0; index < rows.length; index += 1) {
       const left = rows[index];
+      const ageDays = daysOld(left.updatedAt);
+      if (ageDays !== null && ageDays > staleCutoffDays) {
+        staleOpenRecords.push({
+          lane: left.lane,
+          id: left.id,
+          label: left.label,
+          ageDays,
+          updatedAt: left.updatedAt
+        });
+      }
       const leftKey = normalizeForComparison(left.text);
       for (let otherIndex = index + 1; otherIndex < rows.length; otherIndex += 1) {
         const right = rows[otherIndex];
@@ -1091,10 +1124,13 @@ export class MemoryStore {
     return {
       summary: {
         exactDuplicates: exactDuplicates.length,
-        likelyDuplicates: likelyDuplicates.length
+        likelyDuplicates: likelyDuplicates.length,
+        staleOpenRecords: staleOpenRecords.length,
+        staleDays: staleCutoffDays
       },
       exactDuplicates,
-      likelyDuplicates
+      likelyDuplicates,
+      staleOpenRecords: staleOpenRecords.sort((left, right) => right.ageDays - left.ageDays)
     };
   }
 

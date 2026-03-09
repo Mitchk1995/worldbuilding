@@ -1,6 +1,79 @@
 {
-  "generatedAt": "2026-03-09T23:09:19.250Z",
+  "generatedAt": "2026-03-09T23:57:30.500Z",
   "workItems": [
+    {
+      "id": "memory-env-hardening",
+      "title": "Fix repo environment friction and harden operator memory workflow",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "in_progress",
+      "riskLevel": "normal",
+      "reviewRound": 2,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd505-3736-7a70-9723-64ff62c58a68",
+          "reviewerDisplayName": "Schrodinger",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "fail",
+          "notes": "Independent review found two regressions: numeric bare database names can be misread as stale-day overrides in memory audit, and the built-in workspace search fallback does not handle file roots or missing roots safely.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T23:54:52.978Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "This work is repo-local rather than time-sensitive external research. I rechecked current repo state, memory health, and live policy alignment and found no external-source dependency that required new internet research for this change.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T23:57:07.774Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Reviewed the new repo-owned workspace search path, the CLI argument parsing changes, and the memory-health additions. Independent review initially found two edge-case regressions, and both were fixed with added coverage before this pass.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T23:57:13.286Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "QA passed with the full test suite, memory audit, review-ledger check, workspace search spot checks, and operator brief verification. The new tests cover stale-memory surfacing, numeric bare database filenames, file-root search, and missing-root warnings.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T23:57:18.874Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd505-3736-7a70-9723-64ff62c58a68",
+          "reviewerDisplayName": "Schrodinger",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "pass",
+          "notes": "Independent re-review passed after the edge-case fixes. The reviewer confirmed the numeric bare database-name regression is fixed for the intended relative-path case and that the built-in workspace search fallback now handles file roots and missing roots safely.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T23:57:24.767Z"
+        }
+      ]
+    },
     {
       "id": "github-flow-automation",
       "title": "Automate GitHub quality gates and second-agent review defaults",
