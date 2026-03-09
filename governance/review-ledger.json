@@ -1,6 +1,56 @@
 {
-  "generatedAt": "2026-03-09T21:58:07.450Z",
+  "generatedAt": "2026-03-09T22:16:01.753Z",
   "workItems": [
+    {
+      "id": "workspace-discipline",
+      "title": "Add built-in dirty-workspace discipline and clean up current uncommitted build-side changes",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "in_progress",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked the live repo state and current GitHub facts needed for the new public-repo cleanliness policy. This work did not depend on stale external assumptions; the key live fact was the repo now being public and therefore no longer carrying the old private-plan blocker.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T22:15:54.339Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:Averroes",
+          "verdict": "pass",
+          "notes": "Independent review passed. It confirmed the built-in workspace audit command exists, work completion now refuses a dirty repo, the repo contract and handoff note both mention the cleanliness rule, generated review artifacts are gone, and the remaining tree is a coherent build-governance package to commit together.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T22:15:54.369Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Reviewed the workspace-discipline changes for boundary drift. The build-side package now includes a built-in workspace audit command, clean-finish enforcement on work completion, contract updates, handoff updates, and test coverage without drifting into worldbuilding systems.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T22:15:54.375Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Full tests passed, loose generated review artifacts were removed, workspace audit reports only meaningful build-side changes, and the dirty-tree check now blocks work completion until the repo is actually clean.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T22:15:54.393Z"
+        }
+      ]
+    },
     {
       "id": "notion-board-usability",
       "title": "Improve Notion mission-control readability and scanability",
