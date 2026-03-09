@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-03-09T20:57:47.713Z",
+  "workItems": [
+    {
+      "id": "current-research-pass",
+      "title": "Current live research on memory and world orchestration",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "cancelled",
+      "riskLevel": "normal",
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": []
+    },
+    {
+      "id": "github-flow-automation",
+      "title": "Automate GitHub quality gates and second-agent review defaults",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "in_progress",
+      "riskLevel": "normal",
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked current GitHub tooling and fixed the local GitHub command-line path, sign-in, and remote wiring.",
+          "createdAt": "2026-03-09T20:56:25.353Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Tightened review defaults, separated everyday build memory from the future world memory by default, and added a visible review ledger for GitHub to check.",
+          "createdAt": "2026-03-09T20:56:25.418Z"
+        }
+      ]
+    },
+    {
+      "id": "governance-bootstrap",
+      "title": "Bootstrap agent contract and review gates",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "code",
+          "reviewer": "agent",
+          "verdict": "pass",
+          "notes": "Added AGENTS-first repo contract plus enforceable work-item and audit tables, methods, and CLI commands.",
+          "createdAt": "2026-03-09T20:23:17.206Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "agent",
+          "verdict": "pass",
+          "notes": "Reviewed current 2026 patterns across OpenAI, OpenClaw, LangGraph, Mem0, and Letta before tightening the repo contract.",
+          "createdAt": "2026-03-09T20:23:17.207Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "agent",
+          "verdict": "pass",
+          "notes": "Ran npm test successfully after adding governance features and verified CLI seed/work flows.",
+          "createdAt": "2026-03-09T20:23:17.272Z"
+        }
+      ]
+    }
+  ]
+}

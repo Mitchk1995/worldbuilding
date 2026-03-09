@@ -1,0 +1,15 @@
+{
+  "name": "worldbuilding",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "init:memory": "node src/cli.js init",
+    "seed:memory": "node src/cli.js seed",
+    "memory:brief": "node src/cli.js brief operator",
+    "memory:search": "node src/cli.js search",
+    "reviews:sync": "node src/review-ledger.js sync",
+    "reviews:check": "node src/review-ledger.js check",
+    "test": "node --test"
+  }
+}
