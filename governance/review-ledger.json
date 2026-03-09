@@ -1,6 +1,197 @@
 {
-  "generatedAt": "2026-03-09T20:57:47.713Z",
+  "generatedAt": "2026-03-09T21:58:07.450Z",
   "workItems": [
+    {
+      "id": "notion-board-usability",
+      "title": "Improve Notion mission-control readability and scanability",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked the live repo visibility and current GitHub plan docs on March 9, 2026 so the new public-repo state and the resolved private-plan blocker are grounded in current facts rather than stale assumptions.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:58:02.814Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Reviewed the Notion usability pass for clarity and boundary drift. The page now opens with a summary-first layout, the detail tables were narrowed to glanceable columns, the stale private-plan GitHub memory was resolved, and the work stayed strictly on the build side.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:58:02.888Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Verified the repo is public, the old private-plan GitHub blocker and steering are resolved, the Notion page now starts with a compact summary, the detail tables were narrowed, and operator memory audit is still clean with zero duplicate groups.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:58:02.900Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:Avicenna",
+          "verdict": "pass",
+          "notes": "Independent review passed. It confirmed the repo is public, the stale private-plan GitHub memory was resolved, the Notion page now leads with a short summary, the detail tables were narrowed meaningfully, and the work stayed on the build side. Residual note: the page remains a hub with attached detail tables rather than one fully expanded inline board.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:58:02.907Z"
+        }
+      ]
+    },
+    {
+      "id": "notion-mission-control",
+      "title": "Wire Notion mission control for operator steerings, open problems, reviews, and active work",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked current GitHub docs and pricing before repeating the private-repo enforcement note. Protected branches are available in private repos on GitHub Pro, Team, and Enterprise Cloud, while stronger repository rules and push rules still depend on plan level, so the upgrade guidance remains directionally correct for a limited private setup.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:45:25.728Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Reviewed the mission-control wiring and handoff changes for boundary drift. The work stays on the build side, does not touch world-state systems, resolves the stale Notion visibility blocker, and records the remaining Notion inline-view limitation instead of hiding it.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:45:25.740Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Verified the canonical Notion page exists with the four build-side databases attached, confirmed the old Notion visibility blocker is no longer open in operator memory, ran the memory audit cleanly, and checked the updated handoff note.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:45:25.798Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Reviewed the mission-control wiring for boundary drift. The Notion setup stays strictly on the build side, mirrors active work, reviews, steerings, and open problems, resolves the stale Notion visibility blocker, and updates the handoff note without touching worldbuilding systems.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:48:15.007Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked current GitHub documentation and pricing on March 9, 2026. Protected branches and rulesets are available for private repositories on paid GitHub plans, and stronger repository rules are a Team-level path, so the upgrade note is directionally correct if this private setup is still below that tier.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:48:15.026Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:Carver",
+          "verdict": "pass",
+          "notes": "Independent review found no blocking issues. It confirmed the canonical Notion page exists with the four build-side databases, the work stayed out of worldbuilding systems, and the handoff note matches the live state. Residual risk: the current Notion surface is a live hub page rather than one fully expanded inline board.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:48:15.086Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Verified the canonical Notion page exists, the four build-side databases were created and populated, the old Notion blocker is resolved, operator memory audit is clean with zero duplicate groups, and the operator brief now shows the new work plus the current open failures.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:48:15.086Z"
+        }
+      ]
+    },
+    {
+      "id": "operator-memory-hardening",
+      "title": "Harden operator memory and recursive review flow",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked current live GitHub documentation and pricing for private-repository enforcement limits, and confirmed the Notion connection is still not exposed in this session before treating it as available.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:25:17.837Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Hardened operator memory so repeated resolved items reopen cleanly, status changes refresh all affected search records, cancelled work stays out of the open brief, reopened items rise in the brief, and duplicate auditing is less noisy for numbered batches.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:25:17.854Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Ran the full test suite successfully, verified zero duplicate warnings in live operator memory, and checked the live operator brief after cleanup.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:25:17.910Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:Lovelace",
+          "verdict": "pass",
+          "notes": "Independent review came back clean after two fix cycles. No findings remained. Residual risks are still trust-based separate-review identity, Notion not visible in this session, and GitHub private-plan enforcement limits.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T21:25:17.934Z"
+        }
+      ]
+    },
+    {
+      "id": "operator-governance-hardening",
+      "title": "Harden operator memory hygiene and recursive review flow",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "cancelled",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": []
+    },
     {
       "id": "current-research-pass",
       "title": "Current live research on memory and world orchestration",
@@ -8,6 +199,7 @@
       "owner": "main-agent",
       "status": "cancelled",
       "riskLevel": "normal",
+      "reviewRound": 1,
       "requiredReviewTypes": [
         "research",
         "code",
@@ -24,6 +216,7 @@
       "owner": "main-agent",
       "status": "in_progress",
       "riskLevel": "normal",
+      "reviewRound": 1,
       "requiredReviewTypes": [
         "research",
         "code",
@@ -37,6 +230,7 @@
           "reviewer": "main-agent",
           "verdict": "pass",
           "notes": "Checked current GitHub tooling and fixed the local GitHub command-line path, sign-in, and remote wiring.",
+          "reviewRound": 1,
           "createdAt": "2026-03-09T20:56:25.353Z"
         },
         {
@@ -44,7 +238,16 @@
           "reviewer": "main-agent",
           "verdict": "pass",
           "notes": "Tightened review defaults, separated everyday build memory from the future world memory by default, and added a visible review ledger for GitHub to check.",
+          "reviewRound": 1,
           "createdAt": "2026-03-09T20:56:25.418Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Tests passed, the visible review record syncs cleanly, and the build-side memory now defaults to its own separate storage.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T20:58:11.142Z"
         }
       ]
     },
@@ -55,6 +258,7 @@
       "owner": "main-agent",
       "status": "done",
       "riskLevel": "normal",
+      "reviewRound": 1,
       "requiredReviewTypes": [
         "research",
         "code",
@@ -67,6 +271,7 @@
           "reviewer": "agent",
           "verdict": "pass",
           "notes": "Added AGENTS-first repo contract plus enforceable work-item and audit tables, methods, and CLI commands.",
+          "reviewRound": 1,
           "createdAt": "2026-03-09T20:23:17.206Z"
         },
         {
@@ -74,6 +279,7 @@
           "reviewer": "agent",
           "verdict": "pass",
           "notes": "Reviewed current 2026 patterns across OpenAI, OpenClaw, LangGraph, Mem0, and Letta before tightening the repo contract.",
+          "reviewRound": 1,
           "createdAt": "2026-03-09T20:23:17.207Z"
         },
         {
@@ -81,6 +287,7 @@
           "reviewer": "agent",
           "verdict": "pass",
           "notes": "Ran npm test successfully after adding governance features and verified CLI seed/work flows.",
+          "reviewRound": 1,
           "createdAt": "2026-03-09T20:23:17.272Z"
         }
       ]

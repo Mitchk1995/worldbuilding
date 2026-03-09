@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS project_work_items (
   spec TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL DEFAULT 'proposed',
   risk_level TEXT NOT NULL DEFAULT 'normal',
+  review_round INTEGER NOT NULL DEFAULT 1,
   required_review_types_json TEXT NOT NULL DEFAULT '["research","code","qa","independent"]',
   acceptance_json TEXT NOT NULL DEFAULT '[]',
   created_at TEXT NOT NULL,
@@ -45,6 +46,7 @@ CREATE TABLE IF NOT EXISTS project_reviews (
   verdict TEXT NOT NULL,
   notes TEXT NOT NULL,
   findings_json TEXT NOT NULL DEFAULT '[]',
+  review_round INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL
 );
 

@@ -32,6 +32,58 @@ function ensureDirFor(filePath) {
   mkdirSync(dirname(filePath), { recursive: true });
 }
 
+function normalizeForComparison(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function tokenize(value) {
+  return new Set(
+    normalizeForComparison(value)
+      .split(" ")
+      .filter((token) => token.length >= 3 || /^\d+$/.test(token))
+  );
+}
+
+function numericTokens(value) {
+  return new Set(
+    normalizeForComparison(value)
+      .split(" ")
+      .filter((token) => /^\d+$/.test(token))
+  );
+}
+
+function jaccardSimilarity(left, right) {
+  const leftTokens = tokenize(left);
+  const rightTokens = tokenize(right);
+
+  if (leftTokens.size === 0 || rightTokens.size === 0) {
+    return 0;
+  }
+
+  let overlap = 0;
+  for (const token of leftTokens) {
+    if (rightTokens.has(token)) {
+      overlap += 1;
+    }
+  }
+
+  return overlap / (leftTokens.size + rightTokens.size - overlap);
+}
+
+const OPERATOR_RECORD_STATUSES = new Set(["open", "resolved"]);
+
+function assertOperatorRecordStatus(status) {
+  if (!OPERATOR_RECORD_STATUSES.has(status)) {
+    throw new Error(
+      `Unsupported operator record status: ${status}. Allowed statuses: open, resolved.`
+    );
+  }
+}
+
 function bootstrapOperatorDbFromLegacy() {
   if (existsSync(DEFAULT_OPERATOR_DB_PATH) || !existsSync(LEGACY_OPERATOR_DB_PATH)) {
     return;
@@ -115,9 +167,12 @@ export class MemoryStore {
     this.dbPath = resolveDefaultDbPath(dbPath);
     ensureDirFor(this.dbPath);
     this.db = new DatabaseSync(this.dbPath);
-    this.db.exec("PRAGMA journal_mode = WAL;");
-    this.db.exec("PRAGMA synchronous = NORMAL;");
     this.db.exec("PRAGMA busy_timeout = 5000;");
+    const journalMode = this.db.prepare("PRAGMA journal_mode").get();
+    if (String(journalMode?.journal_mode ?? "").toLowerCase() !== "wal") {
+      this.db.prepare("PRAGMA journal_mode = WAL").get();
+    }
+    this.db.exec("PRAGMA synchronous = NORMAL;");
     this.db.exec(SCHEMA_SQL);
     this.#runMigrations();
   }
@@ -133,11 +188,36 @@ export class MemoryStore {
     status = "open",
     priority = 2
   }) {
-    const existing = this.db.prepare(
-      `SELECT id FROM operator_steerings WHERE kind = ? AND note = ?`
-    ).get(kind, note);
+    assertOperatorRecordStatus(status);
+    const comparisonKey = normalizeForComparison(`${kind} ${note}`);
+    const existing = this.listOperatorSteerings().find(
+      (item) => normalizeForComparison(`${item.kind} ${item.note}`) === comparisonKey
+    );
     if (existing) {
-      return this.getOperatorSteering(existing.id);
+      if (
+        existing.status !== status ||
+        existing.kind !== kind ||
+        existing.note !== note ||
+        existing.source !== source ||
+        existing.priority !== priority
+      ) {
+        const timestamp = nowIso();
+        this.db.prepare(
+          `UPDATE operator_steerings
+           SET kind = ?, note = ?, status = ?, source = ?, priority = ?, updated_at = ?
+           WHERE id = ?`
+        ).run(kind, note, status, source, priority, timestamp, existing.id);
+        this.#indexRecord({
+          sourceTable: "operator_steerings",
+          sourceId: existing.id,
+          lane: "operator",
+          title: kind,
+          content: note,
+          tags: [source, status]
+        });
+        return this.getOperatorSteering(existing.id);
+      }
+      return existing;
     }
 
     const id = randomUUID();
@@ -158,6 +238,36 @@ export class MemoryStore {
     return this.getOperatorSteering(id);
   }
 
+  updateOperatorSteeringStatus(idOrKind, status) {
+    assertOperatorRecordStatus(status);
+    const affected = this.db.prepare(
+      `SELECT * FROM operator_steerings
+       WHERE id = ? OR kind = ?`
+    ).all(idOrKind, idOrKind);
+    const timestamp = nowIso();
+    const result = this.db.prepare(
+      `UPDATE operator_steerings
+       SET status = ?, updated_at = ?
+       WHERE id = ? OR kind = ?`
+    ).run(status, timestamp, idOrKind, idOrKind);
+    if (result.changes === 0) {
+      throw new Error(`Unknown steering: ${idOrKind}`);
+    }
+    for (const steering of affected) {
+      this.#indexRecord({
+        sourceTable: "operator_steerings",
+        sourceId: steering.id,
+        lane: "operator",
+        title: steering.kind,
+        content: steering.note,
+        tags: [steering.source, status]
+      });
+    }
+    return this.db.prepare(
+      `SELECT * FROM operator_steerings WHERE id = ? OR kind = ? ORDER BY updated_at DESC LIMIT 1`
+    ).get(idOrKind, idOrKind);
+  }
+
   recordOperatorFailure({
     title,
     details,
@@ -165,11 +275,36 @@ export class MemoryStore {
     impact = null,
     status = "open"
   }) {
-    const existing = this.db.prepare(
-      `SELECT id FROM operator_failures WHERE title = ? AND details = ?`
-    ).get(title, details);
+    assertOperatorRecordStatus(status);
+    const comparisonKey = normalizeForComparison(`${title} ${details}`);
+    const existing = this.listOperatorFailures().find(
+      (item) => normalizeForComparison(`${item.title} ${item.details}`) === comparisonKey
+    );
     if (existing) {
-      return this.getOperatorFailure(existing.id);
+      if (
+        existing.status !== status ||
+        existing.title !== title ||
+        existing.details !== details ||
+        existing.cause !== cause ||
+        existing.impact !== impact
+      ) {
+        const timestamp = nowIso();
+        this.db.prepare(
+          `UPDATE operator_failures
+           SET title = ?, details = ?, status = ?, cause = ?, impact = ?, updated_at = ?
+           WHERE id = ?`
+        ).run(title, details, status, cause, impact, timestamp, existing.id);
+        this.#indexRecord({
+          sourceTable: "operator_failures",
+          sourceId: existing.id,
+          lane: "operator",
+          title,
+          content: `${details}\nCause: ${cause ?? "unknown"}\nImpact: ${impact ?? "unknown"}`,
+          tags: [status]
+        });
+        return this.getOperatorFailure(existing.id);
+      }
+      return existing;
     }
 
     const id = randomUUID();
@@ -190,6 +325,36 @@ export class MemoryStore {
     return this.getOperatorFailure(id);
   }
 
+  updateOperatorFailureStatus(idOrTitle, status) {
+    assertOperatorRecordStatus(status);
+    const affected = this.db.prepare(
+      `SELECT * FROM operator_failures
+       WHERE id = ? OR title = ?`
+    ).all(idOrTitle, idOrTitle);
+    const timestamp = nowIso();
+    const result = this.db.prepare(
+      `UPDATE operator_failures
+       SET status = ?, updated_at = ?
+       WHERE id = ? OR title = ?`
+    ).run(status, timestamp, idOrTitle, idOrTitle);
+    if (result.changes === 0) {
+      throw new Error(`Unknown failure: ${idOrTitle}`);
+    }
+    for (const failure of affected) {
+      this.#indexRecord({
+        sourceTable: "operator_failures",
+        sourceId: failure.id,
+        lane: "operator",
+        title: failure.title,
+        content: `${failure.details}\nCause: ${failure.cause ?? "unknown"}\nImpact: ${failure.impact ?? "unknown"}`,
+        tags: [status]
+      });
+    }
+    return this.db.prepare(
+      `SELECT * FROM operator_failures WHERE id = ? OR title = ? ORDER BY updated_at DESC LIMIT 1`
+    ).get(idOrTitle, idOrTitle);
+  }
+
   upsertProjectWorkItem({
     id,
     title,
@@ -201,11 +366,18 @@ export class MemoryStore {
     requiredReviewTypes = ["research", "code", "qa", "independent"],
     acceptance = []
   }) {
+    const existing = this.getProjectWorkItem(id);
+    const effectiveStatus =
+      existing && status === "proposed" ? existing.status : status;
+    const reviewRound =
+      existing && existing.status === "changes_requested" && effectiveStatus === "in_progress"
+        ? existing.reviewRound + 1
+        : existing?.reviewRound ?? 1;
     const timestamp = nowIso();
     this.db.prepare(
       `INSERT INTO project_work_items
-        (id, title, lane, owner, spec, status, risk_level, required_review_types_json, acceptance_json, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        (id, title, lane, owner, spec, status, risk_level, review_round, required_review_types_json, acceptance_json, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(id) DO UPDATE SET
          title = excluded.title,
          lane = excluded.lane,
@@ -213,6 +385,7 @@ export class MemoryStore {
          spec = excluded.spec,
          status = excluded.status,
          risk_level = excluded.risk_level,
+         review_round = excluded.review_round,
          required_review_types_json = excluded.required_review_types_json,
          acceptance_json = excluded.acceptance_json,
          updated_at = excluded.updated_at`
@@ -222,8 +395,9 @@ export class MemoryStore {
       lane,
       owner,
       spec,
-      status,
+      effectiveStatus,
       riskLevel,
+      reviewRound,
       toJson(requiredReviewTypes),
       toJson(acceptance),
       timestamp,
@@ -235,6 +409,10 @@ export class MemoryStore {
   }
 
   updateProjectWorkStatus(id, status) {
+    const current = this.getProjectWorkItem(id);
+    if (!current) {
+      throw new Error(`Unknown work item: ${id}`);
+    }
     if (status === "in_progress") {
       const blocking = this.db.prepare(
         `SELECT id FROM project_work_items
@@ -249,11 +427,15 @@ export class MemoryStore {
     }
 
     const timestamp = nowIso();
+    const nextRound =
+      status === "in_progress" && current.status === "changes_requested"
+        ? current.reviewRound + 1
+        : current.reviewRound;
     const result = this.db.prepare(
       `UPDATE project_work_items
-       SET status = ?, updated_at = ?
+       SET status = ?, review_round = ?, updated_at = ?
        WHERE id = ?`
-    ).run(status, timestamp, id);
+    ).run(status, nextRound, timestamp, id);
     if (result.changes === 0) {
       throw new Error(`Unknown work item: ${id}`);
     }
@@ -283,13 +465,18 @@ export class MemoryStore {
         `Independent review for ${workItemId} must name a subagent reviewer`
       );
     }
+    if (workItem.status === "changes_requested" && verdict === "pass") {
+      throw new Error(
+        `Cannot record passing review for ${workItemId} while it is changes_requested; resume the work first to start a fresh review round`
+      );
+    }
 
     const id = randomUUID();
     const createdAt = nowIso();
     this.db.prepare(
       `INSERT INTO project_reviews
-        (id, work_item_id, review_type, reviewer, verdict, notes, findings_json, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+        (id, work_item_id, review_type, reviewer, verdict, notes, findings_json, review_round, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       id,
       workItemId,
@@ -298,6 +485,7 @@ export class MemoryStore {
       verdict,
       notes,
       toJson(findings),
+      workItem.reviewRound,
       createdAt
     );
 
@@ -322,8 +510,15 @@ export class MemoryStore {
     if (!workItem) {
       throw new Error(`Unknown work item: ${id}`);
     }
+    if (workItem.status === "changes_requested") {
+      throw new Error(
+        `Work item ${id} cannot be completed while it is still marked changes_requested`
+      );
+    }
 
-    const reviews = this.listProjectReviews(id);
+    const reviews = this.listProjectReviews(id).filter(
+      (review) => review.reviewRound === workItem.reviewRound
+    );
     const latestByType = new Map();
     for (const review of reviews) {
       latestByType.set(review.reviewType, review);
@@ -534,29 +729,32 @@ export class MemoryStore {
       `SELECT kind, note, priority, created_at
        FROM operator_steerings
        WHERE status = 'open'
-       ORDER BY priority DESC, created_at DESC
+       ORDER BY priority DESC, updated_at DESC, created_at DESC
        LIMIT ?`
     ).all(limit);
     const failures = this.db.prepare(
-      `SELECT title, details, created_at
+      `SELECT title, details, created_at, updated_at
        FROM operator_failures
        WHERE status = 'open'
-       ORDER BY created_at DESC
+       ORDER BY updated_at DESC, created_at DESC
        LIMIT ?`
     ).all(limit);
     const workItems = this.db.prepare(
-      `SELECT id, title, status, risk_level
+      `SELECT id, title, status, risk_level, review_round
        FROM project_work_items
-       WHERE status != 'done'
+       WHERE status NOT IN ('done', 'cancelled')
        ORDER BY updated_at DESC
        LIMIT ?`
     ).all(limit);
 
     const lines = [
       "Operator Memory Brief",
-      "",
-      "Open steerings:"
+      ""
     ];
+
+    lines.push(
+      "Open steerings:"
+    );
 
     if (steerings.length === 0) {
       lines.push("- none");
@@ -580,7 +778,9 @@ export class MemoryStore {
       lines.push("- none");
     } else {
       for (const item of workItems) {
-        lines.push(`- [${item.status}] ${item.id} (${item.risk_level}): ${item.title}`);
+        lines.push(
+          `- [${item.status}] ${item.id} (${item.risk_level}, review round ${item.review_round}): ${item.title}`
+        );
       }
     }
 
@@ -664,6 +864,7 @@ export class MemoryStore {
        ORDER BY updated_at DESC, created_at DESC`
     ).all().map((row) => ({
       ...row,
+      reviewRound: row.review_round ?? 1,
       requiredReviewTypes: parseJson(row.required_review_types_json, []),
       acceptance: parseJson(row.acceptance_json, [])
     }));
@@ -685,8 +886,103 @@ export class MemoryStore {
       ...row,
       reviewType: row.review_type,
       workItemId: row.work_item_id,
+      reviewRound: row.review_round ?? 1,
       findings: parseJson(row.findings_json, [])
     }));
+  }
+
+  listOperatorSteerings(status = null) {
+    const rows = status
+      ? this.db.prepare(
+          `SELECT * FROM operator_steerings WHERE status = ? ORDER BY priority DESC, created_at DESC`
+        ).all(status)
+      : this.db.prepare(
+          `SELECT * FROM operator_steerings ORDER BY priority DESC, created_at DESC`
+        ).all();
+    return rows;
+  }
+
+  listOperatorFailures(status = null) {
+    const rows = status
+      ? this.db.prepare(
+          `SELECT * FROM operator_failures WHERE status = ? ORDER BY created_at DESC`
+        ).all(status)
+      : this.db.prepare(
+          `SELECT * FROM operator_failures ORDER BY created_at DESC`
+        ).all();
+    return rows;
+  }
+
+  auditOperatorMemory() {
+    const steerings = this.listOperatorSteerings("open").map((item) => ({
+      lane: "steering",
+      id: item.id,
+      label: item.kind,
+      text: `${item.kind} ${item.note}`
+    }));
+    const failures = this.listOperatorFailures("open").map((item) => ({
+      lane: "failure",
+      id: item.id,
+      label: item.title,
+      text: `${item.title} ${item.details}`
+    }));
+    const rows = [...steerings, ...failures];
+    const exactDuplicates = [];
+    const likelyDuplicates = [];
+    const exactSeen = new Set();
+    const likelySeen = new Set();
+
+    for (let index = 0; index < rows.length; index += 1) {
+      const left = rows[index];
+      const leftKey = normalizeForComparison(left.text);
+      for (let otherIndex = index + 1; otherIndex < rows.length; otherIndex += 1) {
+        const right = rows[otherIndex];
+        const rightKey = normalizeForComparison(right.text);
+        if (!leftKey || !rightKey) {
+          continue;
+        }
+
+        const pairKey = [left.id, right.id].sort().join(":");
+        if (leftKey === rightKey && !exactSeen.has(pairKey)) {
+          exactSeen.add(pairKey);
+          exactDuplicates.push({
+            similarity: 1,
+            items: [left, right]
+          });
+          continue;
+        }
+
+        const similarity = jaccardSimilarity(left.text, right.text);
+        const sameLabel = normalizeForComparison(left.label) === normalizeForComparison(right.label);
+        const leftNumbers = numericTokens(left.text);
+        const rightNumbers = numericTokens(right.text);
+        const hasConflictingNumbers =
+          leftNumbers.size > 0 &&
+          rightNumbers.size > 0 &&
+          [...leftNumbers].every((token) => !rightNumbers.has(token));
+
+        if (hasConflictingNumbers && similarity < 0.9) {
+          continue;
+        }
+
+        if ((similarity >= 0.72 || (sameLabel && similarity >= 0.55)) && !likelySeen.has(pairKey)) {
+          likelySeen.add(pairKey);
+          likelyDuplicates.push({
+            similarity: Number(similarity.toFixed(2)),
+            items: [left, right]
+          });
+        }
+      }
+    }
+
+    return {
+      summary: {
+        exactDuplicates: exactDuplicates.length,
+        likelyDuplicates: likelyDuplicates.length
+      },
+      exactDuplicates,
+      likelyDuplicates
+    };
   }
 
   getOperatorSteering(id) {
@@ -710,6 +1006,7 @@ export class MemoryStore {
     }
     return {
       ...row,
+      reviewRound: row.review_round ?? 1,
       requiredReviewTypes: parseJson(row.required_review_types_json, []),
       acceptance: parseJson(row.acceptance_json, [])
     };
@@ -726,6 +1023,7 @@ export class MemoryStore {
       ...row,
       reviewType: row.review_type,
       workItemId: row.work_item_id,
+      reviewRound: row.review_round ?? 1,
       findings: parseJson(row.findings_json, [])
     };
   }
@@ -741,6 +1039,7 @@ export class MemoryStore {
         owner: item.owner,
         status: item.status,
         riskLevel: item.risk_level,
+        reviewRound: item.reviewRound,
         requiredReviewTypes: item.requiredReviewTypes,
         acceptance: item.acceptance,
         reviews: this.listProjectReviews(item.id).map((review) => ({
@@ -748,6 +1047,7 @@ export class MemoryStore {
           reviewer: review.reviewer,
           verdict: review.verdict,
           notes: review.notes,
+          reviewRound: review.reviewRound,
           createdAt: review.created_at
         }))
       }))
@@ -813,8 +1113,8 @@ export class MemoryStore {
       sourceId: item.id,
       lane: "operator",
       title: item.title,
-      content: `${item.spec}\nAcceptance: ${item.acceptance.join("; ")}`,
-      tags: [item.lane, item.status, item.risk_level, ...item.requiredReviewTypes]
+      content: `${item.spec}\nAcceptance: ${item.acceptance.join("; ")}\nReview round: ${item.reviewRound}`,
+      tags: [item.lane, item.status, item.risk_level, `round:${item.reviewRound}`, ...item.requiredReviewTypes]
     });
   }
 
@@ -834,6 +1134,27 @@ export class MemoryStore {
       "owner",
       "TEXT NOT NULL DEFAULT 'main-agent'"
     );
+    this.#ensureColumn(
+      "project_work_items",
+      "review_round",
+      "INTEGER NOT NULL DEFAULT 1"
+    );
+    this.#ensureColumn(
+      "project_reviews",
+      "review_round",
+      "INTEGER NOT NULL DEFAULT 1"
+    );
+
+    this.db.prepare(
+      `UPDATE project_work_items
+       SET review_round = 1
+       WHERE review_round IS NULL OR review_round < 1`
+    ).run();
+    this.db.prepare(
+      `UPDATE project_reviews
+       SET review_round = 1
+       WHERE review_round IS NULL OR review_round < 1`
+    ).run();
 
     const itemsNeedingIndependent = this.db.prepare(
       `SELECT id, required_review_types_json
@@ -861,7 +1182,13 @@ export class MemoryStore {
     const columns = this.db.prepare(`PRAGMA table_info(${tableName})`).all();
     const exists = columns.some((column) => column.name === columnName);
     if (!exists) {
-      this.db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+      try {
+        this.db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+      } catch (error) {
+        if (!String(error.message).includes("duplicate column name")) {
+          throw error;
+        }
+      }
     }
   }
 }

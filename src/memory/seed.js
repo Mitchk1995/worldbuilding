@@ -44,6 +44,41 @@ export function seedInitialMemory(store) {
       kind: "language-discipline",
       note: "When speaking to the user, use plain English only. Avoid code names, file names, and programmer jargon unless explicitly asked.",
       priority: 3
+    },
+    {
+      kind: "immediate-capture",
+      note: "Record new user feedback, corrections, and 'never do that again' rules immediately when they appear instead of waiting until later.",
+      priority: 3
+    },
+    {
+      kind: "duplicate-hygiene",
+      note: "Before adding or updating durable memory, check for exact and likely duplicate steerings or failures so memory stays clean instead of bloating with repeats.",
+      priority: 3
+    },
+    {
+      kind: "stale-memory-hygiene",
+      note: "When a remembered problem or limit is no longer true, mark it resolved instead of leaving stale warnings active in the operator memory.",
+      priority: 3
+    },
+    {
+      kind: "recursive-review",
+      note: "A failed review is not the end of the process. Work stays in the review loop until the latest full set of reviews comes back clean.",
+      priority: 3
+    },
+    {
+      kind: "separate-reviewer",
+      note: "Use a separate reviewer instance for substantial work instead of relying only on self-review. Prefer lighter separate reviewers for low-risk passes when that saves time without lowering the bar.",
+      priority: 2
+    },
+    {
+      kind: "current-focus",
+      note: "Do not start worldbuilding systems yet. First harden the operator-side memory, review flow, and project discipline so build work stays aligned and clean.",
+      priority: 3
+    },
+    {
+      kind: "visual-mission-control",
+      note: "Use a visual mission-control layer when available so the user can audit state without reading local files directly. Prefer the Notion connection if it is actually available.",
+      priority: 2
     }
   ];
 
@@ -65,6 +100,12 @@ export function seedInitialMemory(store) {
       details: "Referenced products the user considers outdated before finishing a current-year internet-first comparison, which damaged confidence in the research process.",
       cause: "Started from familiar names instead of proving current relevance first.",
       impact: "The research process felt unreliable and mismatched to March 2026."
+    },
+    {
+      title: "Delayed steering capture",
+      details: "Several new user steerings were not written into durable operator memory immediately, which left a gap between conversation state and project memory.",
+      cause: "Feedback capture was treated as something to do later instead of part of the immediate workflow.",
+      impact: "Project memory temporarily lagged behind the actual steering."
     }
   ];
 

@@ -10,8 +10,10 @@ Before substantial work:
 2. Read [progress.md](/D:/codexcoding/worldbuilding/progress.md).
 3. Run `node src/cli.js brief operator`.
 4. Run `node src/cli.js work list`.
-5. If the task depends on current products, models, platforms, or best practices, research current internet sources first. Do not rely on stale local docs or pre-2026 assumptions.
-6. When speaking to the user, use plain English. Do not mention code symbols, file paths, or other programmer-facing labels unless the user explicitly asks for them.
+5. Run `node src/cli.js workspace audit`.
+6. If the task depends on current products, models, platforms, or best practices, research current internet sources first. Do not rely on stale local docs or pre-2026 assumptions.
+7. When speaking to the user, use plain English. Do not mention code symbols, file paths, or other programmer-facing labels unless the user explicitly asks for them.
+8. Do not start worldbuilding systems until operator memory, review flow, and build discipline are explicitly settled.
 
 ## Hard boundaries
 
@@ -20,6 +22,8 @@ Before substantial work:
 - Do not open unrelated skills or reference files just because they seem adjacent.
 - Check for existing relevant skills, systems, and upstream patterns before inventing new abstractions.
 - Record user corrections and agent failures proactively.
+- Record new steerings immediately instead of leaving them in conversation-only state.
+- Audit durable memory for duplicates and stale notes so clutter does not silently become policy.
 - Treat stale model familiarity as a risk. Search the current year first before deciding which products or systems matter.
 
 ## Non-trivial work protocol
@@ -33,19 +37,26 @@ For any task that changes architecture, persistent state, orchestration, dashboa
 3. Log any new steering or failure when discovered:
    `node src/cli.js steering <kind> "<note>"`
    `node src/cli.js failure "<title>" "<details>"`
+   If a remembered issue stops being true, resolve it:
+   `node src/cli.js steering status <id-or-kind> resolved`
+   `node src/cli.js failure status <id-or-title> resolved`
 4. Implement in small increments.
 5. Run verification.
-6. Record audits before calling the work done:
+6. If steerings or failures changed, run:
+   `node src/cli.js audit-memory`
+7. Run:
+   `node src/cli.js workspace audit`
+8. Record audits before calling the work done:
    `node src/cli.js audit add <id> research pass main-agent "<notes>"`
    `node src/cli.js audit add <id> code pass main-agent "<notes>"`
    `node src/cli.js audit add <id> qa pass main-agent "<notes>"`
    `node src/cli.js audit add <id> independent pass <second-agent-name> "<notes from a second agent review>"`
-7. Sync the review ledger into the repo:
+9. Sync the review ledger into the repo:
    `npm run reviews:sync`
-7. Complete the work item:
+10. Complete the work item:
    `node src/cli.js work complete <id>`
 
-`work complete` must fail if the latest required audits are not passing.
+`work complete` must fail if the latest required audits are not passing or the repo still has uncommitted changes.
 
 ## Review standard
 
@@ -57,6 +68,7 @@ Every substantial change must satisfy all of these:
 - `independent`: a separate agent reviews the work so the builder is not the only reviewer
 
 If a review fails, record it and continue only after remediation. Do not silently carry forward known slop.
+After a failed review, the work must earn a fresh clean pass for the whole required review set before completion.
 
 ## World-state discipline
 

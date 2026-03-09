@@ -1,9 +1,11 @@
+import { existsSync } from "node:fs";
 import {
   createMemoryStore,
   DEFAULT_OPERATOR_DB_PATH,
   DEFAULT_WORLD_DB_PATH
 } from "./memory/store.js";
 import { seedInitialMemory } from "./memory/seed.js";
+import { buildWorkspaceDirtyMessage, getWorkspaceAudit } from "./workspace.js";
 
 function printUsage() {
   console.log(`Usage:
@@ -12,7 +14,11 @@ function printUsage() {
   node src/cli.js brief operator [dbPath]
   node src/cli.js brief entity <entityId> [dbPath]
   node src/cli.js steering <kind> <note> [dbPath]
+  node src/cli.js steering list [status] [dbPath]
+  node src/cli.js steering status <idOrKind> <status> [dbPath]
   node src/cli.js failure <title> <details> [dbPath]
+  node src/cli.js failure list [status] [dbPath]
+  node src/cli.js failure status <idOrTitle> <status> [dbPath]
   node src/cli.js work create <id> <title> [lane] [owner] [dbPath]
   node src/cli.js work status <id> <status> [dbPath]
   node src/cli.js work complete <id> [dbPath]
@@ -20,6 +26,8 @@ function printUsage() {
   node src/cli.js work show <id> [dbPath]
   node src/cli.js audit add <workId> <type> <verdict> <reviewer> <notes> [dbPath]
   node src/cli.js audit list [workId] [dbPath]
+  node src/cli.js audit-memory [dbPath]
+  node src/cli.js workspace audit
   node src/cli.js entity <id> <kind> <name> [dbPath]
   node src/cli.js event <type> <summary> [entityId] [dbPath]
   node src/cli.js memory <entityId|global> <scope> <type> <content> [dbPath]
@@ -34,6 +42,26 @@ function readDbPath(args, index) {
 
 function readWorldDbPath(args, index) {
   return args[index] ?? DEFAULT_WORLD_DB_PATH;
+}
+
+function looksLikeDbPath(value) {
+  if (!value) {
+    return false;
+  }
+  return /[\\/]/.test(value) || /\.(sqlite|sqlite3|db)$/i.test(value);
+}
+
+function readOptionalStatus(value, allowed) {
+  if (!value) {
+    return null;
+  }
+  if (allowed.includes(value)) {
+    return value;
+  }
+  if (looksLikeDbPath(value) || existsSync(value)) {
+    return null;
+  }
+  throw new Error(`Unknown status: ${value}. Allowed statuses: ${allowed.join(", ")}.`);
 }
 
 function runDemo(store) {
@@ -134,6 +162,28 @@ function main() {
   }
 
   if (command === "steering") {
+    if (args[1] === "list") {
+      const maybeStatus = readOptionalStatus(args[2], ["open", "resolved"]);
+      const dbPath = maybeStatus === null ? readDbPath(args, 2) : readDbPath(args, 3);
+      const store = createMemoryStore(dbPath);
+      console.log(JSON.stringify(store.listOperatorSteerings(maybeStatus), null, 2));
+      store.close();
+      return;
+    }
+
+    if (args[1] === "status") {
+      const idOrKind = args[2];
+      const status = args[3];
+      const dbPath = readDbPath(args, 4);
+      if (!idOrKind || !status) {
+        throw new Error("Steering status requires <idOrKind> <status>.");
+      }
+      const store = createMemoryStore(dbPath);
+      console.log(JSON.stringify(store.updateOperatorSteeringStatus(idOrKind, status), null, 2));
+      store.close();
+      return;
+    }
+
     const kind = args[1];
     const note = args[2];
     const dbPath = readDbPath(args, 3);
@@ -147,6 +197,28 @@ function main() {
   }
 
   if (command === "failure") {
+    if (args[1] === "list") {
+      const maybeStatus = readOptionalStatus(args[2], ["open", "resolved"]);
+      const dbPath = maybeStatus === null ? readDbPath(args, 2) : readDbPath(args, 3);
+      const store = createMemoryStore(dbPath);
+      console.log(JSON.stringify(store.listOperatorFailures(maybeStatus), null, 2));
+      store.close();
+      return;
+    }
+
+    if (args[1] === "status") {
+      const idOrTitle = args[2];
+      const status = args[3];
+      const dbPath = readDbPath(args, 4);
+      if (!idOrTitle || !status) {
+        throw new Error("Failure status requires <idOrTitle> <status>.");
+      }
+      const store = createMemoryStore(dbPath);
+      console.log(JSON.stringify(store.updateOperatorFailureStatus(idOrTitle, status), null, 2));
+      store.close();
+      return;
+    }
+
     const title = args[1];
     const details = args[2];
     const dbPath = readDbPath(args, 3);
@@ -164,12 +236,12 @@ function main() {
     if (action === "create") {
       const id = args[2];
       const title = args[3];
-      const lane = args[4] && !args[4].endsWith(".sqlite") ? args[4] : "operator";
-      const owner = args[5] && !args[5].endsWith(".sqlite") ? args[5] : "main-agent";
+      const lane = args[4] && !looksLikeDbPath(args[4]) ? args[4] : "operator";
+      const owner = args[5] && !looksLikeDbPath(args[5]) ? args[5] : "main-agent";
       const dbPath =
-        args[4]?.endsWith(".sqlite")
+        looksLikeDbPath(args[4])
           ? readDbPath(args, 4)
-          : args[5]?.endsWith(".sqlite")
+          : looksLikeDbPath(args[5])
             ? readDbPath(args, 5)
             : readDbPath(args, 6);
       if (!id || !title) {
@@ -191,8 +263,16 @@ function main() {
         throw new Error("Work status requires <id> <status>.");
       }
       const store = createMemoryStore(dbPath);
-      console.log(JSON.stringify(store.updateProjectWorkStatus(id, status), null, 2));
+      const updated = store.updateProjectWorkStatus(id, status);
+      console.log(JSON.stringify(updated, null, 2));
       store.close();
+      if (status === "in_progress") {
+        const audit = getWorkspaceAudit();
+        const warning = buildWorkspaceDirtyMessage(audit);
+        if (warning) {
+          console.error(`Workspace warning while starting work: ${warning}`);
+        }
+      }
       return;
     }
 
@@ -201,6 +281,11 @@ function main() {
       const dbPath = readDbPath(args, 3);
       if (!id) {
         throw new Error("Work complete requires <id>.");
+      }
+      const audit = getWorkspaceAudit();
+      const warning = buildWorkspaceDirtyMessage(audit);
+      if (warning) {
+        throw new Error(warning);
       }
       const store = createMemoryStore(dbPath);
       console.log(JSON.stringify(store.completeProjectWorkItem(id), null, 2));
@@ -254,7 +339,7 @@ function main() {
     }
 
     if (action === "list") {
-      const workItemId = args[2] && !args[2].endsWith(".sqlite") ? args[2] : null;
+      const workItemId = args[2] && !looksLikeDbPath(args[2]) ? args[2] : null;
       const dbPath =
         workItemId === null ? readDbPath(args, 2) : readDbPath(args, 3);
       const store = createMemoryStore(dbPath);
@@ -262,6 +347,22 @@ function main() {
       store.close();
       return;
     }
+  }
+
+  if (command === "audit-memory") {
+    const dbPath = readDbPath(args, 1);
+    const store = createMemoryStore(dbPath);
+    console.log(JSON.stringify(store.auditOperatorMemory(), null, 2));
+    store.close();
+    return;
+  }
+
+  if (command === "workspace") {
+    if (args[1] !== "audit") {
+      throw new Error("Workspace supports only the 'audit' action.");
+    }
+    console.log(JSON.stringify(getWorkspaceAudit(), null, 2));
+    return;
   }
 
   if (command === "entity") {
@@ -281,7 +382,7 @@ function main() {
   if (command === "event") {
     const eventType = args[1];
     const summary = args[2];
-    const entityId = args[3] && !args[3].endsWith(".sqlite") ? args[3] : null;
+    const entityId = args[3] && !looksLikeDbPath(args[3]) ? args[3] : null;
     const dbPath =
       entityId === null ? readWorldDbPath(args, 3) : readWorldDbPath(args, 4);
     if (!eventType || !summary) {

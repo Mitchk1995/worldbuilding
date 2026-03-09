@@ -25,11 +25,17 @@ function validateLedger(ledger) {
       continue;
     }
 
-    const latest = latestReviewsByType(item.reviews ?? []);
+    const currentRound = item.reviewRound ?? 1;
+    const roundReviews = (item.reviews ?? []).filter(
+      (review) => (review.reviewRound ?? 1) === currentRound
+    );
+    const latest = latestReviewsByType(roundReviews);
     for (const reviewType of item.requiredReviewTypes ?? []) {
       const review = latest.get(reviewType);
       if (!review) {
-        problems.push(`${item.id} is done but missing ${reviewType} review`);
+        problems.push(
+          `${item.id} is done but missing ${reviewType} review in round ${currentRound}`
+        );
         continue;
       }
       if (review.verdict !== "pass") {
