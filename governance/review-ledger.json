@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-09T22:34:21.344Z",
+  "generatedAt": "2026-03-09T23:03:34.705Z",
   "workItems": [
     {
       "id": "github-flow-automation",
@@ -8,7 +8,7 @@
       "owner": "main-agent",
       "status": "done",
       "riskLevel": "normal",
-      "reviewRound": 1,
+      "reviewRound": 3,
       "requiredReviewTypes": [
         "research",
         "code",
@@ -72,6 +72,136 @@
           "notes": "Independent review passed. It confirmed the repo-tracked GitHub policy script works, the PR checklist is enforced in GitHub Actions, the existing verify check still validates tests and the review ledger, and the repo contract and handoff note both reflect the live protected-branch state. Residual risk: reviewer identity is still trusted through the review ledger rather than GitHub approval identity.",
           "reviewRound": 1,
           "createdAt": "2026-03-09T22:32:04.740Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "fail",
+          "notes": "GitHub verify failed on March 9, 2026 because the brief test expected a specific steering label that did not reliably appear in the top brief output across environments.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T22:37:41.860Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked the live GitHub branch protection state on March 9, 2026 and confirmed the public repo still has the intended main-branch policy. The tracked policy script and the live repo settings still match, so this round is using current live state instead of stale assumptions.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:54:04.820Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "The GitHub governance layer remains in place: the tracked policy script, the pull-request checklist enforcement workflow, the updated repo contract, and the less brittle brief test all hold together in the current branch state.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:54:08.675Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "npm test passed with 28 passing tests and npm run github:policy:audit reported matches true for the live main-branch policy. That closes the earlier brittle-test failure with a fresh clean QA pass in round two.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:54:12.602Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd4bd-4b56-7513-be71-babd388fb0ae",
+          "verdict": "fail",
+          "notes": "Independent review found two blockers in round two: the current branch mixes GitHub automation with later reviewer-traceability work, so it is not a clean GitHub-automation-only review branch, and GitHub has not re-run verify on the current head yet because the open PR is still behind local HEAD. The GitHub automation files themselves still look coherent, but the branch scope and stale remote checks block a clean pass.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:57:21.578Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Checked the live GitHub state on March 9, 2026 after splitting the work onto a clean GitHub-automation-only branch. The new branch is pushed, GitHub sees it, and the live policy on main still matches the tracked policy file.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-09T23:00:14.737Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Kept the GitHub automation branch scoped to GitHub governance only and fixed the brittle brief test with a minimal change on that clean branch, without pulling the later reviewer-traceability work into this review round.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-09T23:00:21.650Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "npm test passed locally on the clean GitHub-automation branch, npm run github:policy:audit still reported matches true, and GitHub push run 22878709358 finished with verify passing on the current branch head.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-09T23:00:25.786Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd4bd-4b56-7513-be71-babd388fb0ae",
+          "verdict": "pass",
+          "notes": "Fresh round-three independent review found no blocking issues. It confirmed the work is back on a dedicated GitHub-automation branch, the current head matches a passing GitHub verify run, and the actual GitHub automation pieces remain coherent. The stale progress note it flagged was corrected. Residual risk remains that the system still relies on the tracked review ledger instead of GitHub approval identity.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-09T23:03:02.624Z"
+        }
+      ]
+    },
+    {
+      "id": "reviewer-identity-hardening",
+      "title": "Harden independent reviewer identity and evidence",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 2,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd4bd-4b56-7513-be71-babd388fb0ae",
+          "verdict": "fail",
+          "notes": "Independent review found a blocker: revoking a reviewer later would retroactively invalidate already completed work in the ledger because exported historical reviews use the reviewer's current registry status instead of a status captured at review time. Residual risk also remains that reviewer identity is still trust-based rather than tool-verified.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-09T22:47:31.462Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "This round did not depend on changing outside products or live platform behavior. I reviewed the local review-flow and migration path, and I kept the still-open dishonest-actor spoofing limit explicit instead of claiming it was solved.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:52:50.983Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "Added a reviewer registry, stored review-time reviewer snapshots, backfilled historical reviewer identities including old UUID-style reviewer keys, and updated the command surface, ledger checks, tests, and repo contract to use the stricter traceability path.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:52:54.889Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "verdict": "pass",
+          "notes": "npm test passed with 28 passing tests, npm run reviews:check passed, and the reviewer register and list commands worked locally while preserving older review history in exported ledger data.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:52:58.717Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd4bd-4b56-7513-be71-babd388fb0ae",
+          "verdict": "pass",
+          "notes": "Fresh round-two independent review found no blocking issues. It confirmed the revocation history regression is fixed, older reviewer identities including UUID-style keys are preserved in the ledger, and the remaining dishonest-actor spoofing gap stays explicitly open as a residual risk rather than being falsely claimed solved.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-09T22:53:05.168Z"
         }
       ]
     },
