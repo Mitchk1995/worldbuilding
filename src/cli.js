@@ -24,6 +24,9 @@ function printUsage() {
   node src/cli.js work complete <id> [dbPath]
   node src/cli.js work list [dbPath]
   node src/cli.js work show <id> [dbPath]
+  node src/cli.js reviewer register <agentId> <displayName> [dbPath]
+  node src/cli.js reviewer list [status] [dbPath]
+  node src/cli.js reviewer status <reviewerKeyOrAgentId> <status> [dbPath]
   node src/cli.js audit add <workId> <type> <verdict> <reviewer> <notes> [dbPath]
   node src/cli.js audit list [workId] [dbPath]
   node src/cli.js audit-memory [dbPath]
@@ -309,6 +312,52 @@ function main() {
       }
       const store = createMemoryStore(dbPath);
       console.log(JSON.stringify(store.getProjectWorkItem(id), null, 2));
+      store.close();
+      return;
+    }
+  }
+
+  if (command === "reviewer") {
+    const action = args[1];
+    if (action === "register") {
+      const agentId = args[2];
+      const displayName = args[3];
+      const dbPath = readDbPath(args, 4);
+      if (!agentId || !displayName) {
+        throw new Error("Reviewer register requires <agentId> <displayName>.");
+      }
+      const store = createMemoryStore(dbPath);
+      console.log(
+        JSON.stringify(store.registerReviewerIdentity({ agentId, displayName }), null, 2)
+      );
+      store.close();
+      return;
+    }
+
+    if (action === "list") {
+      const maybeStatus = readOptionalStatus(args[2], ["active", "legacy", "revoked"]);
+      const dbPath = maybeStatus === null ? readDbPath(args, 2) : readDbPath(args, 3);
+      const store = createMemoryStore(dbPath);
+      console.log(JSON.stringify(store.listReviewerIdentities(maybeStatus), null, 2));
+      store.close();
+      return;
+    }
+
+    if (action === "status") {
+      const reviewerKeyOrAgentId = args[2];
+      const status = args[3];
+      const dbPath = readDbPath(args, 4);
+      if (!reviewerKeyOrAgentId || !status) {
+        throw new Error("Reviewer status requires <reviewerKeyOrAgentId> <status>.");
+      }
+      const store = createMemoryStore(dbPath);
+      console.log(
+        JSON.stringify(
+          store.updateReviewerIdentityStatus(reviewerKeyOrAgentId, status),
+          null,
+          2
+        )
+      );
       store.close();
       return;
     }

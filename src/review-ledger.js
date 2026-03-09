@@ -47,6 +47,12 @@ function validateLedger(ledger) {
       if (reviewType === "independent" && !String(review.reviewer).startsWith("subagent:")) {
         problems.push(`${item.id} independent review is not tied to a subagent`);
       }
+      if (reviewType === "independent" && review.reviewerRegistered === false) {
+        problems.push(`${item.id} independent review is not tied to a registered reviewer`);
+      }
+      if (reviewType === "independent" && review.reviewerIdentityStatus === "revoked") {
+        problems.push(`${item.id} independent review uses a revoked reviewer identity`);
+      }
     }
   }
 

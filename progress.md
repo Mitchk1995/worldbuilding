@@ -14,7 +14,9 @@ Current state:
 - The live GitHub policy now protects `main` with pull-request-only merging, strict required checks, conversation resolution, linear history, and no force pushes or branch deletion.
 - The tracked GitHub policy lives in `src/github-policy.js`, and the repo can now audit or apply it with `npm run github:policy:audit` and `npm run github:policy:apply`.
 - GitHub approving reviews are intentionally set to zero in branch protection because the real separate-agent review is enforced through the tracked review ledger and the required quality checks, not through a manual approval click.
-- The GitHub automation work item is in a fresh round-three cleanup pass on its own dedicated branch after the earlier brittle brief test failed in GitHub even though it sometimes passed locally.
+- The GitHub automation work item is now complete on `main` after a clean round-three pass on its own dedicated branch.
+- This branch adds reviewer traceability and review-time identity snapshots so historical reviews stay truthful when reviewer status changes later.
+- The stronger dishonest-actor spoofing problem is still open and is being kept explicit instead of being falsely claimed solved.
 - The Notion server is visible in this session and the build-side mission-control page is live at [Operator Mission Control](https://www.notion.so/31e797eac74c8180bf5ae9405ebb4a40).
 - That Notion page is now the live build-side hub for active work, reviews, steerings, and open problems.
 - The Notion page now leads with a short summary and narrower tables so it is easier to scan without horizontal scrolling.
@@ -48,6 +50,5 @@ Immediate next build targets:
 - Keep the Notion mission-control page in sync as build-side work, reviews, steerings, and open problems change.
 - Use the built-in workspace audit and clean-finish rule so build work does not pile up as one large dirty tree again.
 - Tighten duplicate and stale-note cleanup further where close paraphrases still slip through.
-- Finish the current GitHub automation round on the dedicated GitHub-only branch now that the clean head has a passing `verify` run.
-- Harden independent reviewer identity so a dishonest actor cannot fake the second-review rule by typing a different reviewer label.
+- Preserve reviewer traceability and review-time identity snapshots, while keeping the stronger dishonest-actor spoofing problem open until there is tool-backed reviewer attestation.
 - Keep worldbuilding work paused until operator governance is solid.
