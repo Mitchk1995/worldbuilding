@@ -11,6 +11,9 @@ Current state:
 - The bootstrap work item `governance-bootstrap` was completed only after research, code, and QA audits passed.
 - Current focus is operator-side memory, review discipline, and anti-slop workflow only. Do not start worldbuilding systems yet.
 - The GitHub repository is now public, which removes the old private-plan enforcement blocker.
+- The live GitHub policy now protects `main` with pull-request-only merging, strict required checks, conversation resolution, linear history, and no force pushes or branch deletion.
+- The tracked GitHub policy lives in `src/github-policy.js`, and the repo can now audit or apply it with `npm run github:policy:audit` and `npm run github:policy:apply`.
+- GitHub approving reviews are intentionally set to zero in branch protection because the real separate-agent review is enforced through the tracked review ledger and the required quality checks, not through a manual approval click.
 - The Notion server is visible in this session and the build-side mission-control page is live at [Operator Mission Control](https://www.notion.so/31e797eac74c8180bf5ae9405ebb4a40).
 - That Notion page is now the live build-side hub for active work, reviews, steerings, and open problems.
 - The Notion page now leads with a short summary and narrower tables so it is easier to scan without horizontal scrolling.
@@ -40,7 +43,8 @@ Known failures already recorded:
 - The current Notion tool path would not safely convert the mission-control page into one expanded inline board view, so the page currently works as a live hub with attached databases instead.
 
 Immediate next build targets:
+- Keep the live GitHub policy and the repo-tracked policy file in sync.
 - Keep the Notion mission-control page in sync as build-side work, reviews, steerings, and open problems change.
 - Use the built-in workspace audit and clean-finish rule so build work does not pile up as one large dirty tree again.
 - Tighten duplicate and stale-note cleanup further where close paraphrases still slip through.
-- Finish GitHub automation with a fresh separate-agent review and keep worldbuilding work paused until operator governance is solid.
+- Finish the remaining GitHub automation handoff cleanly with a fresh separate-agent review and keep worldbuilding work paused until operator governance is solid.

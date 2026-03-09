@@ -14,6 +14,7 @@ Before substantial work:
 6. If the task depends on current products, models, platforms, or best practices, research current internet sources first. Do not rely on stale local docs or pre-2026 assumptions.
 7. When speaking to the user, use plain English. Do not mention code symbols, file paths, or other programmer-facing labels unless the user explicitly asks for them.
 8. Do not start worldbuilding systems until operator memory, review flow, and build discipline are explicitly settled.
+9. If the task touches GitHub enforcement or merge policy, run `npm run github:policy:audit` instead of assuming the live repo settings still match the intended policy.
 
 ## Hard boundaries
 
