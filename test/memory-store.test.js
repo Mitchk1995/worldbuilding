@@ -36,7 +36,7 @@ test("operator memory stores steerings and failures", () => {
   const brief = store.buildOperatorBrief().content;
 
   assert.match(brief, /Operator Memory Brief/);
-  assert.match(brief, /duplicate-hygiene/);
+  assert.match(brief, /agents-first/);
   assert.match(brief, /Opened unrelated memory skills/);
 
   store.close();

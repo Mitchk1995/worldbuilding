@@ -8,6 +8,8 @@
     "seed:memory": "node src/cli.js seed",
     "memory:brief": "node src/cli.js brief operator",
     "memory:search": "node src/cli.js search",
+    "github:policy:audit": "node src/github-policy.js audit",
+    "github:policy:apply": "node src/github-policy.js apply",
     "reviews:sync": "node src/review-ledger.js sync",
     "reviews:check": "node src/review-ledger.js check",
     "test": "node --test"

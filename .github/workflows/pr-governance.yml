@@ -1,0 +1,41 @@
+name: PR Governance
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+
+jobs:
+  review-record:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate pull request checklist
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request?.body ?? "";
+            const required = [
+              "Current-source research checked where time-sensitive",
+              "Main implementation review completed",
+              "Tests or other verification completed",
+              "Independent second-agent review completed",
+              "This does not build on something already marked obsolete",
+              "Old assumptions were re-checked if the area is fast-moving",
+              "This can be explained in plain English"
+            ];
+
+            const missing = required.filter((label) => {
+              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+              const checked = new RegExp(`- \\[x\\] ${escaped}`, "i");
+              return !checked.test(body);
+            });
+
+            if (missing.length > 0) {
+              core.setFailed(
+                `Pull request checklist is incomplete. Missing checked items: ${missing.join("; ")}`
+              );
+            }
