@@ -30,6 +30,10 @@ function initTempRepo() {
   return dir;
 }
 
+function registerSubagentReviewer(store, agentId, displayName) {
+  return store.registerReviewerIdentity({ agentId, displayName });
+}
+
 test("operator memory stores steerings and failures", () => {
   const store = createTempStore();
   seedInitialMemory(store);
@@ -153,10 +157,16 @@ test("project work cannot complete until required audits pass", () => {
     /must name a subagent reviewer/
   );
 
+  const dalton = registerSubagentReviewer(
+    store,
+    "11111111-1111-7111-8111-111111111111",
+    "Dalton"
+  );
+
   store.recordProjectReview({
     workItemId: "governance-bootstrap",
     reviewType: "independent",
-    reviewer: "subagent:dalton",
+    reviewer: dalton.reviewer_key,
     verdict: "pass",
     notes: "Independent review found no blocking issues."
   });
@@ -263,10 +273,15 @@ test("failed review forces a fresh full review round before work can complete", 
     verdict: "pass",
     notes: "QA passed in round two."
   });
+  const reviewer = registerSubagentReviewer(
+    store,
+    "22222222-2222-7222-8222-222222222222",
+    "Round Two Reviewer"
+  );
   store.recordProjectReview({
     workItemId: "review-loop",
     reviewType: "independent",
-    reviewer: "subagent:reviewer",
+    reviewer: reviewer.reviewer_key,
     verdict: "pass",
     notes: "Independent review passed in round two."
   });
@@ -537,6 +552,160 @@ test("re-recording a resolved steering refreshes its stored text and reopens it"
   store.close();
 });
 
+test("independent review requires a registered active reviewer identity", () => {
+  const store = createTempStore();
+  store.upsertProjectWorkItem({
+    id: "identity-check",
+    title: "Identity check",
+    owner: "main-agent",
+    requiredReviewTypes: ["research", "code", "qa", "independent"]
+  });
+
+  assert.throws(
+    () =>
+      store.recordProjectReview({
+        workItemId: "identity-check",
+        reviewType: "independent",
+        reviewer: "subagent:33333333-3333-7333-8333-333333333333",
+        verdict: "pass",
+        notes: "Tried to pass without a registered identity."
+      }),
+    /registered reviewer identity/
+  );
+
+  const registered = registerSubagentReviewer(
+    store,
+    "33333333-3333-7333-8333-333333333333",
+    "Hubble"
+  );
+  store.recordProjectReview({
+    workItemId: "identity-check",
+    reviewType: "independent",
+    reviewer: registered.reviewer_key,
+    verdict: "pass",
+    notes: "Registered reviewer identity works."
+  });
+
+  const exportedBeforeRevocation = store.exportReviewLedger();
+  const savedReview = exportedBeforeRevocation.workItems[0].reviews[0];
+  assert.equal(savedReview.reviewerIdentityStatus, "active");
+  assert.equal(savedReview.reviewerRegistered, true);
+
+  store.updateReviewerIdentityStatus(registered.reviewer_key, "revoked");
+
+  const exportedAfterRevocation = store.exportReviewLedger();
+  const historicalReview = exportedAfterRevocation.workItems[0].reviews[0];
+  assert.equal(historicalReview.reviewerIdentityStatus, "active");
+  assert.equal(historicalReview.reviewerRegistered, true);
+
+  assert.throws(
+    () =>
+      store.recordProjectReview({
+        workItemId: "identity-check",
+        reviewType: "independent",
+        reviewer: registered.reviewer_key,
+        verdict: "pass",
+        notes: "Revoked reviewer should not be accepted."
+      }),
+    /active reviewer identity/
+  );
+
+  store.close();
+});
+
+test("legacy reviewer labels are preserved as legacy identities during migration", () => {
+  const dir = mkdtempSync(join(tmpdir(), "world-memory-legacy-reviewer-"));
+  const dbPath = join(dir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "legacy-review",
+    title: "Legacy review",
+    owner: "main-agent",
+    requiredReviewTypes: ["research", "code", "qa", "independent"],
+    status: "done"
+  });
+  const createdAt = new Date().toISOString();
+  store.db.prepare(
+    `INSERT INTO project_reviews
+      (id, work_item_id, review_type, reviewer, verdict, notes, findings_json, review_round, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    "legacy-review-id",
+    "legacy-review",
+    "independent",
+    "subagent:Hubble",
+    "pass",
+    "Legacy imported review.",
+    "[]",
+    1,
+    createdAt
+  );
+  store.close();
+
+  const reopened = createMemoryStore(dbPath);
+  const identity = reopened.getReviewerIdentity("subagent:Hubble");
+  assert.equal(identity?.status, "legacy");
+
+  const ledger = reopened.exportReviewLedger();
+  const review = ledger.workItems[0].reviews[0];
+  assert.equal(review.reviewerRegistered, true);
+  assert.equal(review.reviewerIdentityStatus, "legacy");
+  reopened.close();
+});
+
+test("historical uuid reviewer keys are backfilled as legacy identities", () => {
+  const dir = mkdtempSync(join(tmpdir(), "world-memory-legacy-reviewer-uuid-"));
+  const dbPath = join(dir, "memory.sqlite");
+  const reviewerKey = "subagent:66666666-6666-7666-8666-666666666666";
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "legacy-uuid-review",
+    title: "Legacy UUID review",
+    owner: "main-agent",
+    requiredReviewTypes: ["research", "code", "qa", "independent"],
+    status: "done"
+  });
+  const createdAt = new Date().toISOString();
+  store.db.prepare(
+    `INSERT INTO project_reviews
+      (
+        id,
+        work_item_id,
+        review_type,
+        reviewer,
+        reviewer_registered,
+        verdict,
+        notes,
+        findings_json,
+        review_round,
+        created_at
+      )
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).run(
+    "legacy-uuid-review-id",
+    "legacy-uuid-review",
+    "independent",
+    reviewerKey,
+    0,
+    "pass",
+    "Legacy UUID keyed review.",
+    "[]",
+    1,
+    createdAt
+  );
+  store.close();
+
+  const reopened = createMemoryStore(dbPath);
+  const identity = reopened.getReviewerIdentity(reviewerKey);
+  assert.equal(identity?.status, "legacy");
+
+  const ledger = reopened.exportReviewLedger();
+  const review = ledger.workItems[0].reviews[0];
+  assert.equal(review.reviewerRegistered, true);
+  assert.equal(review.reviewerIdentityStatus, "legacy");
+  reopened.close();
+});
+
 test("operator record status updates reject unsupported values", () => {
   const store = createTempStore();
   const steering = store.recordOperatorSteering({
@@ -611,6 +780,40 @@ test("list commands reject unknown status tokens instead of creating stray datab
   );
 });
 
+test("reviewer cli can register and list active reviewer identities", () => {
+  const dir = mkdtempSync(join(tmpdir(), "world-memory-reviewer-cli-"));
+  const dbPath = join(dir, "memory.sqlite");
+  const cliPath = join(process.cwd(), "src", "cli.js");
+
+  execFileSync(
+    "node",
+    [
+      cliPath,
+      "reviewer",
+      "register",
+      "55555555-5555-7555-8555-555555555555",
+      "Mendel",
+      dbPath
+    ],
+    {
+      cwd: process.cwd(),
+      stdio: "pipe"
+    }
+  );
+
+  const output = execFileSync(
+    "node",
+    [cliPath, "reviewer", "list", "active", dbPath],
+    {
+      cwd: process.cwd(),
+      stdio: "pipe"
+    }
+  ).toString();
+
+  assert.match(output, /Mendel/);
+  assert.match(output, /55555555-5555-7555-8555-555555555555/);
+});
+
 test("workspace helpers classify generated review artifacts separately", () => {
   const entries = parseGitStatusPorcelain(
     " M src/cli.js\n?? governance/subagent-review-test.txt\n?? governance/operator-memory-hardening-review.diff\n"
@@ -680,10 +883,15 @@ test("work complete via cli refuses a dirty workspace", () => {
     verdict: "pass",
     notes: "ok"
   });
+  const cleaner = registerSubagentReviewer(
+    store,
+    "44444444-4444-7444-8444-444444444444",
+    "Cleaner"
+  );
   store.recordProjectReview({
     workItemId: "cli-complete",
     reviewType: "independent",
-    reviewer: "subagent:cleaner",
+    reviewer: cleaner.reviewer_key,
     verdict: "pass",
     notes: "ok"
   });

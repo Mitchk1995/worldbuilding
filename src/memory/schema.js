@@ -43,11 +43,24 @@ CREATE TABLE IF NOT EXISTS project_reviews (
   work_item_id TEXT NOT NULL REFERENCES project_work_items(id) ON DELETE CASCADE,
   review_type TEXT NOT NULL,
   reviewer TEXT NOT NULL DEFAULT 'agent',
+  reviewer_display_name TEXT,
+  reviewer_identity_status TEXT,
+  reviewer_registered INTEGER NOT NULL DEFAULT 0,
   verdict TEXT NOT NULL,
   notes TEXT NOT NULL,
   findings_json TEXT NOT NULL DEFAULT '[]',
   review_round INTEGER NOT NULL DEFAULT 1,
   created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS reviewer_identities (
+  reviewer_key TEXT PRIMARY KEY,
+  reviewer_kind TEXT NOT NULL DEFAULT 'subagent',
+  agent_id TEXT NOT NULL,
+  display_name TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS world_entities (

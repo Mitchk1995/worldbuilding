@@ -75,6 +75,9 @@ function jaccardSimilarity(left, right) {
 }
 
 const OPERATOR_RECORD_STATUSES = new Set(["open", "resolved"]);
+const REVIEWER_IDENTITY_STATUSES = new Set(["active", "legacy", "revoked"]);
+const SUBAGENT_AGENT_ID_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function assertOperatorRecordStatus(status) {
   if (!OPERATOR_RECORD_STATUSES.has(status)) {
@@ -82,6 +85,18 @@ function assertOperatorRecordStatus(status) {
       `Unsupported operator record status: ${status}. Allowed statuses: open, resolved.`
     );
   }
+}
+
+function assertReviewerIdentityStatus(status) {
+  if (!REVIEWER_IDENTITY_STATUSES.has(status)) {
+    throw new Error(
+      `Unsupported reviewer identity status: ${status}. Allowed statuses: active, legacy, revoked.`
+    );
+  }
+}
+
+function reviewerKeyFromAgentId(agentId) {
+  return `subagent:${agentId}`;
 }
 
 function bootstrapOperatorDbFromLegacy() {
@@ -443,6 +458,57 @@ export class MemoryStore {
     return this.getProjectWorkItem(id);
   }
 
+  registerReviewerIdentity({
+    agentId,
+    displayName,
+    reviewerKind = "subagent",
+    status = "active"
+  }) {
+    assertReviewerIdentityStatus(status);
+    if (reviewerKind !== "subagent") {
+      throw new Error(`Unsupported reviewer identity kind: ${reviewerKind}`);
+    }
+    if (!SUBAGENT_AGENT_ID_PATTERN.test(String(agentId ?? ""))) {
+      throw new Error(
+        `Reviewer agent id must be a UUID-like subagent id. Received: ${agentId}`
+      );
+    }
+    if (!String(displayName ?? "").trim()) {
+      throw new Error("Reviewer display name is required.");
+    }
+
+    const reviewerKey = reviewerKeyFromAgentId(agentId);
+    const timestamp = nowIso();
+    this.db.prepare(
+      `INSERT INTO reviewer_identities
+        (reviewer_key, reviewer_kind, agent_id, display_name, status, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(reviewer_key) DO UPDATE SET
+         reviewer_kind = excluded.reviewer_kind,
+         agent_id = excluded.agent_id,
+         display_name = excluded.display_name,
+         status = excluded.status,
+         updated_at = excluded.updated_at`
+    ).run(reviewerKey, reviewerKind, agentId, displayName.trim(), status, timestamp, timestamp);
+
+    return this.getReviewerIdentity(reviewerKey);
+  }
+
+  updateReviewerIdentityStatus(reviewerKeyOrAgentId, status) {
+    assertReviewerIdentityStatus(status);
+    const timestamp = nowIso();
+    const reviewerKey = this.#coerceReviewerKey(reviewerKeyOrAgentId);
+    const result = this.db.prepare(
+      `UPDATE reviewer_identities
+       SET status = ?, updated_at = ?
+       WHERE reviewer_key = ? OR agent_id = ?`
+    ).run(status, timestamp, reviewerKey, reviewerKeyOrAgentId);
+    if (result.changes === 0) {
+      throw new Error(`Unknown reviewer identity: ${reviewerKeyOrAgentId}`);
+    }
+    return this.getReviewerIdentity(reviewerKeyOrAgentId);
+  }
+
   recordProjectReview({
     workItemId,
     reviewType,
@@ -452,6 +518,7 @@ export class MemoryStore {
     findings = []
   }) {
     const workItem = this.getProjectWorkItem(workItemId);
+    let reviewerIdentity = null;
     if (!workItem) {
       throw new Error(`Unknown work item: ${workItemId}`);
     }
@@ -465,6 +532,19 @@ export class MemoryStore {
         `Independent review for ${workItemId} must name a subagent reviewer`
       );
     }
+    if (reviewType === "independent") {
+      reviewerIdentity = this.getReviewerIdentity(reviewer);
+      if (!reviewerIdentity) {
+        throw new Error(
+          `Independent review for ${workItemId} must use a registered reviewer identity`
+        );
+      }
+      if (reviewerIdentity.status !== "active") {
+        throw new Error(
+          `Independent review for ${workItemId} must use an active reviewer identity`
+        );
+      }
+    }
     if (workItem.status === "changes_requested" && verdict === "pass") {
       throw new Error(
         `Cannot record passing review for ${workItemId} while it is changes_requested; resume the work first to start a fresh review round`
@@ -475,13 +555,29 @@ export class MemoryStore {
     const createdAt = nowIso();
     this.db.prepare(
       `INSERT INTO project_reviews
-        (id, work_item_id, review_type, reviewer, verdict, notes, findings_json, review_round, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        (
+          id,
+          work_item_id,
+          review_type,
+          reviewer,
+          reviewer_display_name,
+          reviewer_identity_status,
+          reviewer_registered,
+          verdict,
+          notes,
+          findings_json,
+          review_round,
+          created_at
+        )
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       id,
       workItemId,
       reviewType,
       reviewer,
+      reviewerIdentity?.display_name ?? null,
+      reviewerIdentity?.status ?? null,
+      reviewerIdentity ? 1 : 0,
       verdict,
       notes,
       toJson(findings),
@@ -887,8 +983,25 @@ export class MemoryStore {
       reviewType: row.review_type,
       workItemId: row.work_item_id,
       reviewRound: row.review_round ?? 1,
+      reviewerDisplayName: row.reviewer_display_name ?? null,
+      reviewerIdentityStatus: row.reviewer_identity_status ?? null,
+      reviewerRegistered: Boolean(row.reviewer_registered),
       findings: parseJson(row.findings_json, [])
     }));
+  }
+
+  listReviewerIdentities(status = null) {
+    const rows = status
+      ? this.db.prepare(
+          `SELECT * FROM reviewer_identities
+           WHERE status = ?
+           ORDER BY updated_at DESC, created_at DESC`
+        ).all(status)
+      : this.db.prepare(
+          `SELECT * FROM reviewer_identities
+           ORDER BY updated_at DESC, created_at DESC`
+        ).all();
+    return rows;
   }
 
   listOperatorSteerings(status = null) {
@@ -1024,8 +1137,21 @@ export class MemoryStore {
       reviewType: row.review_type,
       workItemId: row.work_item_id,
       reviewRound: row.review_round ?? 1,
+      reviewerDisplayName: row.reviewer_display_name ?? null,
+      reviewerIdentityStatus: row.reviewer_identity_status ?? null,
+      reviewerRegistered: Boolean(row.reviewer_registered),
       findings: parseJson(row.findings_json, [])
     };
+  }
+
+  getReviewerIdentity(reviewerKeyOrAgentId) {
+    const reviewerKey = this.#coerceReviewerKey(reviewerKeyOrAgentId);
+    return this.db.prepare(
+      `SELECT * FROM reviewer_identities
+       WHERE reviewer_key = ? OR agent_id = ?
+       ORDER BY updated_at DESC
+       LIMIT 1`
+    ).get(reviewerKey, reviewerKeyOrAgentId);
   }
 
   exportReviewLedger() {
@@ -1042,14 +1168,19 @@ export class MemoryStore {
         reviewRound: item.reviewRound,
         requiredReviewTypes: item.requiredReviewTypes,
         acceptance: item.acceptance,
-        reviews: this.listProjectReviews(item.id).map((review) => ({
-          reviewType: review.reviewType,
-          reviewer: review.reviewer,
-          verdict: review.verdict,
-          notes: review.notes,
-          reviewRound: review.reviewRound,
-          createdAt: review.created_at
-        }))
+        reviews: this.listProjectReviews(item.id).map((review) => {
+          return {
+            reviewType: review.reviewType,
+            reviewer: review.reviewer,
+            reviewerDisplayName: review.reviewerDisplayName ?? null,
+            reviewerIdentityStatus: review.reviewerIdentityStatus ?? null,
+            reviewerRegistered: Boolean(review.reviewerRegistered),
+            verdict: review.verdict,
+            notes: review.notes,
+            reviewRound: review.reviewRound,
+            createdAt: review.created_at
+          };
+        })
       }))
     };
   }
@@ -1118,6 +1249,17 @@ export class MemoryStore {
     });
   }
 
+  #coerceReviewerKey(reviewerKeyOrAgentId) {
+    const value = String(reviewerKeyOrAgentId ?? "").trim();
+    if (value.startsWith("subagent:")) {
+      return value;
+    }
+    if (SUBAGENT_AGENT_ID_PATTERN.test(value)) {
+      return reviewerKeyFromAgentId(value);
+    }
+    return value;
+  }
+
   #storeContextPack({ packKind, targetId = null, content, inputs }) {
     const id = randomUUID();
     const createdAt = nowIso();
@@ -1143,6 +1285,21 @@ export class MemoryStore {
       "project_reviews",
       "review_round",
       "INTEGER NOT NULL DEFAULT 1"
+    );
+    this.#ensureColumn(
+      "project_reviews",
+      "reviewer_display_name",
+      "TEXT"
+    );
+    this.#ensureColumn(
+      "project_reviews",
+      "reviewer_identity_status",
+      "TEXT"
+    );
+    this.#ensureColumn(
+      "project_reviews",
+      "reviewer_registered",
+      "INTEGER NOT NULL DEFAULT 0"
     );
 
     this.db.prepare(
@@ -1176,6 +1333,9 @@ export class MemoryStore {
       reviewTypes.push("independent");
       update.run(JSON.stringify(reviewTypes), nowIso(), item.id);
     }
+
+    this.#seedLegacyReviewerIdentities();
+    this.#backfillReviewerSnapshots();
   }
 
   #ensureColumn(tableName, columnName, definition) {
@@ -1189,6 +1349,55 @@ export class MemoryStore {
           throw error;
         }
       }
+    }
+  }
+
+  #seedLegacyReviewerIdentities() {
+    const reviews = this.db.prepare(
+      `SELECT DISTINCT reviewer
+      FROM project_reviews
+      WHERE review_type = 'independent'
+         AND reviewer LIKE 'subagent:%'`
+    ).all();
+    const insert = this.db.prepare(
+      `INSERT OR IGNORE INTO reviewer_identities
+        (reviewer_key, reviewer_kind, agent_id, display_name, status, created_at, updated_at)
+       VALUES (?, 'subagent', ?, ?, 'legacy', ?, ?)`
+    );
+
+    for (const review of reviews) {
+      const reviewerKey = String(review.reviewer);
+      const agentId = reviewerKey.replace(/^subagent:/, "");
+      if (!agentId) {
+        continue;
+      }
+      const timestamp = nowIso();
+      insert.run(reviewerKey, agentId, agentId, timestamp, timestamp);
+    }
+  }
+
+  #backfillReviewerSnapshots() {
+    const reviews = this.db.prepare(
+      `SELECT id, reviewer
+       FROM project_reviews
+       WHERE review_type = 'independent'
+         AND (
+           reviewer_registered IS NULL OR reviewer_registered = 0 OR
+           reviewer_identity_status IS NULL OR reviewer_display_name IS NULL
+         )`
+    ).all();
+    const update = this.db.prepare(
+      `UPDATE project_reviews
+       SET reviewer_display_name = ?, reviewer_identity_status = ?, reviewer_registered = ?
+       WHERE id = ?`
+    );
+
+    for (const review of reviews) {
+      const identity = this.getReviewerIdentity(review.reviewer);
+      if (!identity) {
+        continue;
+      }
+      update.run(identity.display_name, identity.status, 1, review.id);
     }
   }
 }

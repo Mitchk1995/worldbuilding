@@ -21,6 +21,7 @@ Before substantial work:
 - Keep `operator memory` separate from `world runtime memory`.
 - Do not treat vector retrieval or transcript recall as canon.
 - Do not open unrelated skills or reference files just because they seem adjacent.
+- Own branch handling without making the user manage it. Keep `main` as the protected landing branch, use a dedicated work branch for meaningful build work, keep unrelated work off the same branch, and merge back plus clean up branches yourself when the work is ready.
 - Check for existing relevant skills, systems, and upstream patterns before inventing new abstractions.
 - Record user corrections and agent failures proactively.
 - Record new steerings immediately instead of leaving them in conversation-only state.
@@ -47,14 +48,17 @@ For any task that changes architecture, persistent state, orchestration, dashboa
    `node src/cli.js audit-memory`
 7. Run:
    `node src/cli.js workspace audit`
-8. Record audits before calling the work done:
+8. If the work needs an independent review, register the reviewer identity before writing the audit:
+   `node src/cli.js reviewer register <subagent-id> "<nickname>"`
+   Record the independent audit with `subagent:<subagent-id>`, not a freeform reviewer label.
+9. Record audits before calling the work done:
    `node src/cli.js audit add <id> research pass main-agent "<notes>"`
    `node src/cli.js audit add <id> code pass main-agent "<notes>"`
    `node src/cli.js audit add <id> qa pass main-agent "<notes>"`
-   `node src/cli.js audit add <id> independent pass <second-agent-name> "<notes from a second agent review>"`
-9. Sync the review ledger into the repo:
+   `node src/cli.js audit add <id> independent pass subagent:<subagent-id> "<notes from a second agent review>"`
+10. Sync the review ledger into the repo:
    `npm run reviews:sync`
-10. Complete the work item:
+11. Complete the work item:
    `node src/cli.js work complete <id>`
 
 `work complete` must fail if the latest required audits are not passing or the repo still has uncommitted changes.
@@ -67,6 +71,8 @@ Every substantial change must satisfy all of these:
 - `code`: changed behavior reviewed for regressions, missing edge cases, and architecture drift
 - `qa`: commands/tests/manual checks run and recorded
 - `independent`: a separate agent reviews the work so the builder is not the only reviewer
+
+Independent reviews must use a registered reviewer identity keyed to the spawned subagent id, not an invented display name.
 
 If a review fails, record it and continue only after remediation. Do not silently carry forward known slop.
 After a failed review, the work must earn a fresh clean pass for the whole required review set before completion.
