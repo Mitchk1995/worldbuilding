@@ -33,7 +33,7 @@ function initTempRepo() {
 test("operator memory stores steerings and failures", () => {
   const store = createTempStore();
   seedInitialMemory(store);
-  const brief = store.buildOperatorBrief().content;
+  const brief = store.buildOperatorBrief(50).content;
 
   assert.match(brief, /Operator Memory Brief/);
   assert.match(brief, /agents-first/);
