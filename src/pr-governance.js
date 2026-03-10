@@ -1,4 +1,4 @@
-import { validateReviewEvidence } from "./pr-review-evidence.js";
+import { validateReviewEvidence } from "./pr-review-evidence-core.js";
 
 const REQUIRED_CHECKLIST_ITEMS = [
   "Current-source research checked where time-sensitive",
