@@ -76,6 +76,17 @@ export function getWorkspaceAudit(cwd = process.cwd()) {
   }
 }
 
+export function getGitHeadSha(cwd = process.cwd()) {
+  try {
+    return execFileSync("git", ["rev-parse", "HEAD"], {
+      cwd,
+      stdio: "pipe"
+    }).toString().trim();
+  } catch {
+    return null;
+  }
+}
+
 export function buildWorkspaceDirtyMessage(audit) {
   if (!audit.available) {
     return `Workspace state could not be verified: ${audit.reason ?? "unknown error"}. Run \`node src/cli.js workspace audit\` and fix the environment before starting or completing work.`;

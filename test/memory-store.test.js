@@ -149,7 +149,10 @@ test("project work cannot complete until required audits pass", () => {
   });
 
   assert.throws(
-    () => store.completeProjectWorkItem("governance-bootstrap"),
+    () =>
+      store.completeProjectWorkItem("governance-bootstrap", {
+        reviewedHeadSha: "1111111111111111111111111111111111111111"
+      }),
     /missing reviews: qa, independent/
   );
 
@@ -199,8 +202,11 @@ test("project work cannot complete until required audits pass", () => {
     notes: "Independent review found no blocking issues."
   });
 
-  const completed = store.completeProjectWorkItem("governance-bootstrap");
+  const completed = store.completeProjectWorkItem("governance-bootstrap", {
+    reviewedHeadSha: "1111111111111111111111111111111111111111"
+  });
   assert.equal(completed.status, "done");
+  assert.equal(completed.reviewedHeadSha, "1111111111111111111111111111111111111111");
 
   store.close();
 });
@@ -220,6 +226,45 @@ test("changes requested work blocks other work from starting", () => {
   assert.throws(
     () => store.updateProjectWorkStatus("new-work", "in_progress"),
     /older-work is still marked changes_requested/
+  );
+
+  store.close();
+});
+
+test("work completion requires reviewed head commit evidence", () => {
+  const store = createTempStore();
+  store.upsertProjectWorkItem({
+    id: "missing-head-proof",
+    title: "Missing head proof",
+    owner: "main-agent",
+    status: "in_progress",
+    requiredReviewTypes: ["research", "code", "qa", "independent"]
+  });
+  for (const reviewType of ["research", "code", "qa"]) {
+    store.recordProjectReview({
+      workItemId: "missing-head-proof",
+      reviewType,
+      reviewer: "main-agent",
+      verdict: "pass",
+      notes: "ok"
+    });
+  }
+  const reviewer = registerSubagentReviewer(
+    store,
+    "55555555-5555-7555-8555-555555555555",
+    "Proof"
+  );
+  store.recordProjectReview({
+    workItemId: "missing-head-proof",
+    reviewType: "independent",
+    reviewer: reviewer.reviewer_key,
+    verdict: "pass",
+    notes: "ok"
+  });
+
+  assert.throws(
+    () => store.completeProjectWorkItem("missing-head-proof"),
+    /reviewed head commit evidence/
   );
 
   store.close();
@@ -247,7 +292,10 @@ test("proposed work cannot be reviewed or completed until it is active", () => {
   );
 
   assert.throws(
-    () => store.completeProjectWorkItem("proposed-only"),
+    () =>
+      store.completeProjectWorkItem("proposed-only", {
+        reviewedHeadSha: "2222222222222222222222222222222222222222"
+      }),
     /still proposed; move it to in_progress first/
   );
 
@@ -365,7 +413,10 @@ test("failed review forces a fresh full review round before work can complete", 
   });
 
   assert.throws(
-    () => store.completeProjectWorkItem("review-loop"),
+    () =>
+      store.completeProjectWorkItem("review-loop", {
+        reviewedHeadSha: "3333333333333333333333333333333333333333"
+      }),
     /missing reviews: research, qa, independent/
   );
 
@@ -396,7 +447,9 @@ test("failed review forces a fresh full review round before work can complete", 
     notes: "Independent review passed in round two."
   });
 
-  const completed = store.completeProjectWorkItem("review-loop");
+  const completed = store.completeProjectWorkItem("review-loop", {
+    reviewedHeadSha: "3333333333333333333333333333333333333333"
+  });
   assert.equal(completed.status, "done");
 
   store.close();
@@ -445,12 +498,18 @@ test("reopening done work starts a fresh review round and blocks stale approvals
     notes: "ok"
   });
 
-  store.completeProjectWorkItem("done-reopen");
+  store.completeProjectWorkItem("done-reopen", {
+    reviewedHeadSha: "4444444444444444444444444444444444444444"
+  });
   const reopened = store.updateProjectWorkStatus("done-reopen", "in_progress");
   assert.equal(reopened.reviewRound, 2);
+  assert.equal(reopened.reviewedHeadSha, null);
 
   assert.throws(
-    () => store.completeProjectWorkItem("done-reopen"),
+    () =>
+      store.completeProjectWorkItem("done-reopen", {
+        reviewedHeadSha: "4444444444444444444444444444444444444444"
+      }),
     /missing reviews: research, code, qa, independent/
   );
 
@@ -667,6 +726,80 @@ test("ledger check accepts older exports that do not include explicit review rou
     cwd: process.cwd(),
     stdio: "pipe"
   });
+});
+
+test("ledger check rejects two completed work items bound to the same reviewed head", () => {
+  const dir = mkdtempSync(join(tmpdir(), "world-ledger-dup-head-"));
+  const ledgerPath = join(dir, "review-ledger.json");
+  const reviewedHeadSha = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+  const duplicateLedger = {
+    generatedAt: new Date().toISOString(),
+    workItems: [
+      {
+        id: "item-one",
+        title: "Item one",
+        lane: "operator",
+        owner: "main-agent",
+        status: "done",
+        riskLevel: "normal",
+        reviewRound: 1,
+        reviewedHeadSha,
+        requiredReviewTypes: ["research", "code", "qa", "independent"],
+        acceptance: [],
+        reviews: [
+          { reviewType: "research", reviewer: "main-agent", verdict: "pass", notes: "ok", reviewRound: 1 },
+          { reviewType: "code", reviewer: "main-agent", verdict: "pass", notes: "ok", reviewRound: 1 },
+          { reviewType: "qa", reviewer: "main-agent", verdict: "pass", notes: "ok", reviewRound: 1 },
+          {
+            reviewType: "independent",
+            reviewer: "subagent:one",
+            reviewerRegistered: true,
+            reviewerIdentityStatus: "active",
+            verdict: "pass",
+            notes: "ok",
+            reviewRound: 1
+          }
+        ]
+      },
+      {
+        id: "item-two",
+        title: "Item two",
+        lane: "operator",
+        owner: "main-agent",
+        status: "done",
+        riskLevel: "normal",
+        reviewRound: 1,
+        reviewedHeadSha,
+        requiredReviewTypes: ["research", "code", "qa", "independent"],
+        acceptance: [],
+        reviews: [
+          { reviewType: "research", reviewer: "main-agent", verdict: "pass", notes: "ok", reviewRound: 1 },
+          { reviewType: "code", reviewer: "main-agent", verdict: "pass", notes: "ok", reviewRound: 1 },
+          { reviewType: "qa", reviewer: "main-agent", verdict: "pass", notes: "ok", reviewRound: 1 },
+          {
+            reviewType: "independent",
+            reviewer: "subagent:two",
+            reviewerRegistered: true,
+            reviewerIdentityStatus: "active",
+            verdict: "pass",
+            notes: "ok",
+            reviewRound: 1
+          }
+        ]
+      }
+    ]
+  };
+
+  writeFileSync(ledgerPath, `${JSON.stringify(duplicateLedger, null, 2)}\n`);
+
+  assert.throws(
+    () =>
+      execFileSync("node", ["src/review-ledger.js", "check", ledgerPath], {
+        cwd: process.cwd(),
+        stdio: "pipe"
+      }),
+    /shares reviewed head commit/
+  );
 });
 
 test("upserting an in-progress work item after changes requested starts a fresh review round", () => {
@@ -1287,6 +1420,59 @@ test("work complete via cli refuses a dirty workspace", () => {
   );
 });
 
+test("work complete via cli records the reviewed head commit", () => {
+  const repoDir = initTempRepo();
+  const reviewedHeadSha = execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: repoDir,
+    stdio: "pipe"
+  }).toString().trim();
+
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-complete-head-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "cli-complete-head",
+    title: "CLI complete head",
+    owner: "main-agent",
+    status: "in_progress",
+    requiredReviewTypes: ["research", "code", "qa", "independent"]
+  });
+  for (const reviewType of ["research", "code", "qa"]) {
+    store.recordProjectReview({
+      workItemId: "cli-complete-head",
+      reviewType,
+      reviewer: "main-agent",
+      verdict: "pass",
+      notes: "ok"
+    });
+  }
+  const reviewer = registerSubagentReviewer(
+    store,
+    "77777777-7777-7777-8777-777777777777",
+    "Committer"
+  );
+  store.recordProjectReview({
+    workItemId: "cli-complete-head",
+    reviewType: "independent",
+    reviewer: reviewer.reviewer_key,
+    verdict: "pass",
+    notes: "ok"
+  });
+  store.close();
+
+  const cliPath = join(process.cwd(), "src", "cli.js");
+  execFileSync("node", [cliPath, "work", "complete", "cli-complete-head", dbPath], {
+    cwd: repoDir,
+    stdio: "pipe"
+  });
+
+  const reopened = createMemoryStore(dbPath);
+  const item = reopened.getProjectWorkItem("cli-complete-head");
+  assert.equal(item.status, "done");
+  assert.equal(item.reviewedHeadSha, reviewedHeadSha);
+  reopened.close();
+});
+
 test("work status via cli refuses to start dirty work before changing state", () => {
   const repoDir = initTempRepo();
   writeFileSync(join(repoDir, "untracked.txt"), "dirty\n");
@@ -1349,5 +1535,73 @@ test("work status via cli refuses to start when workspace state cannot be verifi
 
   const reopened = createMemoryStore(dbPath);
   assert.equal(reopened.getProjectWorkItem("cli-start-no-git").status, "proposed");
+  reopened.close();
+});
+
+test("audit add via cli captures the current reviewed head sha", () => {
+  const repoDir = initTempRepo();
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-audit-head-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "cli-audit-head",
+    title: "CLI audit head",
+    owner: "main-agent",
+    status: "in_progress"
+  });
+  store.close();
+
+  const cliPath = join(process.cwd(), "src", "cli.js");
+  execFileSync(
+    "node",
+    [cliPath, "audit", "add", "cli-audit-head", "code", "pass", "main-agent", "Bound audit", dbPath],
+    {
+      cwd: repoDir,
+      stdio: "pipe"
+    }
+  );
+
+  const headSha = execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: repoDir,
+    stdio: "pipe"
+  }).toString().trim();
+
+  const reopened = createMemoryStore(dbPath);
+  const review = reopened.listProjectReviews("cli-audit-head")[0];
+  assert.equal(review.reviewedHeadSha, headSha);
+  reopened.close();
+});
+
+test("audit add via cli refuses dirty workspace so reviews stay bound to the actual head", () => {
+  const repoDir = initTempRepo();
+  writeFileSync(join(repoDir, "untracked.txt"), "dirty\n");
+
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-audit-dirty-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "cli-audit-dirty",
+    title: "CLI audit dirty",
+    owner: "main-agent",
+    status: "in_progress"
+  });
+  store.close();
+
+  const cliPath = join(process.cwd(), "src", "cli.js");
+  assert.throws(
+    () =>
+      execFileSync(
+        "node",
+        [cliPath, "audit", "add", "cli-audit-dirty", "code", "pass", "main-agent", "Dirty audit", dbPath],
+        {
+          cwd: repoDir,
+          stdio: "pipe"
+        }
+      ),
+    /Cannot record bound audit: Workspace is dirty/
+  );
+
+  const reopened = createMemoryStore(dbPath);
+  assert.equal(reopened.listProjectReviews("cli-audit-dirty").length, 0);
   reopened.close();
 });

@@ -464,7 +464,11 @@ export class MemoryStore {
     return this.getProjectWorkItem(id);
   }
 
-  updateProjectWorkStatus(id, status, { allowDoneTransition = false } = {}) {
+  updateProjectWorkStatus(
+    id,
+    status,
+    { allowDoneTransition = false, reviewedHeadSha = null } = {}
+  ) {
     assertProjectWorkStatus(status);
     const current = this.getProjectWorkItem(id);
     if (!current) {
@@ -500,9 +504,15 @@ export class MemoryStore {
         : current.reviewRound;
     const result = this.db.prepare(
       `UPDATE project_work_items
-       SET status = ?, review_round = ?, updated_at = ?
+       SET status = ?, review_round = ?, reviewed_head_sha = ?, updated_at = ?
        WHERE id = ?`
-    ).run(status, nextRound, timestamp, id);
+    ).run(
+      status,
+      nextRound,
+      status === "done" ? reviewedHeadSha : null,
+      timestamp,
+      id
+    );
     if (result.changes === 0) {
       throw new Error(`Unknown work item: ${id}`);
     }
@@ -567,7 +577,8 @@ export class MemoryStore {
     reviewer = "agent",
     verdict,
     notes,
-    findings = []
+    findings = [],
+    reviewedHeadSha = null
   }) {
     const workItem = this.getProjectWorkItem(workItemId);
     let reviewerIdentity = null;
@@ -625,13 +636,14 @@ export class MemoryStore {
           reviewer_display_name,
           reviewer_identity_status,
           reviewer_registered,
+          reviewed_head_sha,
           verdict,
           notes,
           findings_json,
           review_round,
           created_at
         )
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
       id,
       workItemId,
@@ -640,6 +652,7 @@ export class MemoryStore {
       reviewerIdentity?.display_name ?? null,
       reviewerIdentity?.status ?? null,
       reviewerIdentity ? 1 : 0,
+      reviewedHeadSha,
       verdict,
       notes,
       toJson(findings),
@@ -663,10 +676,15 @@ export class MemoryStore {
     return this.getProjectReview(id);
   }
 
-  completeProjectWorkItem(id) {
+  completeProjectWorkItem(id, { reviewedHeadSha } = {}) {
     const workItem = this.getProjectWorkItem(id);
     if (!workItem) {
       throw new Error(`Unknown work item: ${id}`);
+    }
+    if (!String(reviewedHeadSha ?? "").trim()) {
+      throw new Error(
+        `Work item ${id} cannot be completed without reviewed head commit evidence`
+      );
     }
     if (workItem.status === "proposed") {
       throw new Error(
@@ -716,7 +734,10 @@ export class MemoryStore {
       throw new Error(`Work item ${id} cannot be completed; ${parts.join("; ")}`);
     }
 
-    return this.updateProjectWorkStatus(id, "done", { allowDoneTransition: true });
+    return this.updateProjectWorkStatus(id, "done", {
+      allowDoneTransition: true,
+      reviewedHeadSha: String(reviewedHeadSha).trim()
+    });
   }
 
   upsertWorldEntity({
@@ -1047,6 +1068,7 @@ export class MemoryStore {
     ).all().map((row) => ({
       ...row,
       reviewRound: row.review_round ?? 1,
+      reviewedHeadSha: row.reviewed_head_sha ?? null,
       requiredReviewTypes: parseJson(row.required_review_types_json, []),
       acceptance: parseJson(row.acceptance_json, [])
     }));
@@ -1072,6 +1094,7 @@ export class MemoryStore {
       reviewerDisplayName: row.reviewer_display_name ?? null,
       reviewerIdentityStatus: row.reviewer_identity_status ?? null,
       reviewerRegistered: Boolean(row.reviewer_registered),
+      reviewedHeadSha: row.reviewed_head_sha ?? null,
       findings: parseJson(row.findings_json, [])
     }));
   }
@@ -1223,6 +1246,7 @@ export class MemoryStore {
     return {
       ...row,
       reviewRound: row.review_round ?? 1,
+      reviewedHeadSha: row.reviewed_head_sha ?? null,
       requiredReviewTypes: parseJson(row.required_review_types_json, []),
       acceptance: parseJson(row.acceptance_json, [])
     };
@@ -1243,6 +1267,7 @@ export class MemoryStore {
       reviewerDisplayName: row.reviewer_display_name ?? null,
       reviewerIdentityStatus: row.reviewer_identity_status ?? null,
       reviewerRegistered: Boolean(row.reviewer_registered),
+      reviewedHeadSha: row.reviewed_head_sha ?? null,
       findings: parseJson(row.findings_json, [])
     };
   }
@@ -1269,6 +1294,7 @@ export class MemoryStore {
         status: item.status,
         riskLevel: item.risk_level,
         reviewRound: item.reviewRound,
+        reviewedHeadSha: item.reviewedHeadSha ?? null,
         requiredReviewTypes: item.requiredReviewTypes,
         acceptance: item.acceptance,
         reviews: this.listProjectReviews(item.id).map((review) => {
@@ -1278,6 +1304,7 @@ export class MemoryStore {
             reviewerDisplayName: review.reviewerDisplayName ?? null,
             reviewerIdentityStatus: review.reviewerIdentityStatus ?? null,
             reviewerRegistered: Boolean(review.reviewerRegistered),
+            reviewedHeadSha: review.reviewedHeadSha ?? null,
             verdict: review.verdict,
             notes: review.notes,
             reviewRound: review.reviewRound,
@@ -1385,6 +1412,11 @@ export class MemoryStore {
       "INTEGER NOT NULL DEFAULT 1"
     );
     this.#ensureColumn(
+      "project_work_items",
+      "reviewed_head_sha",
+      "TEXT"
+    );
+    this.#ensureColumn(
       "project_reviews",
       "review_round",
       "INTEGER NOT NULL DEFAULT 1"
@@ -1403,6 +1435,11 @@ export class MemoryStore {
       "project_reviews",
       "reviewer_registered",
       "INTEGER NOT NULL DEFAULT 0"
+    );
+    this.#ensureColumn(
+      "project_reviews",
+      "reviewed_head_sha",
+      "TEXT"
     );
 
     this.db.prepare(

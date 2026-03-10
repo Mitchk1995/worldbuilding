@@ -10,7 +10,7 @@ import {
   buildMissionControlPageContent
 } from "./mission-control.js";
 import { searchWorkspaceText } from "./repo-search.js";
-import { buildWorkspaceDirtyMessage, getWorkspaceAudit } from "./workspace.js";
+import { buildWorkspaceDirtyMessage, getGitHeadSha, getWorkspaceAudit } from "./workspace.js";
 
 function printUsage() {
   console.log(`Usage:
@@ -331,7 +331,15 @@ function main() {
         throw new Error(warning);
       }
       const store = createMemoryStore(dbPath);
-      console.log(JSON.stringify(store.completeProjectWorkItem(id), null, 2));
+      console.log(
+        JSON.stringify(
+          store.completeProjectWorkItem(id, {
+            reviewedHeadSha: getGitHeadSha()
+          }),
+          null,
+          2
+        )
+      );
       store.close();
       return;
     }
@@ -415,10 +423,28 @@ function main() {
       if (!workItemId || !reviewType || !verdict || !reviewer || !notes) {
         throw new Error("Audit add requires <workId> <type> <verdict> <reviewer> <notes>.");
       }
+      const audit = getWorkspaceAudit();
+      const warning = buildWorkspaceDirtyMessage(audit);
+      if (warning) {
+        throw new Error(`Cannot record bound audit: ${warning}`);
+      }
+      const reviewedHeadSha = getGitHeadSha();
+      if (!reviewedHeadSha) {
+        throw new Error(
+          "Cannot record bound audit because the current Git head could not be determined."
+        );
+      }
       const store = createMemoryStore(dbPath);
       console.log(
         JSON.stringify(
-          store.recordProjectReview({ workItemId, reviewType, verdict, reviewer, notes }),
+          store.recordProjectReview({
+            workItemId,
+            reviewType,
+            verdict,
+            reviewer,
+            notes,
+            reviewedHeadSha
+          }),
           null,
           2
         )

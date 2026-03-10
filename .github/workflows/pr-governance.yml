@@ -13,29 +13,26 @@ jobs:
   review-record:
     runs-on: ubuntu-latest
     steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
       - name: Validate pull request checklist
         uses: actions/github-script@v7
         with:
           script: |
+            const { loadReviewLedger, validatePullRequestGovernance } = await import(
+              `file://${process.env.GITHUB_WORKSPACE}/src/pr-governance.js`
+            );
             const body = context.payload.pull_request?.body ?? "";
-            const required = [
-              "Current-source research checked where time-sensitive",
-              "Main implementation review completed",
-              "Tests or other verification completed",
-              "Independent second-agent review completed",
-              "This does not build on something already marked obsolete",
-              "Old assumptions were re-checked if the area is fast-moving",
-              "This can be explained in plain English"
-            ];
-
-            const missing = required.filter((label) => {
-              const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-              const checked = new RegExp(`- \\[x\\] ${escaped}`, "i");
-              return !checked.test(body);
+            const ledger = loadReviewLedger(`${process.env.GITHUB_WORKSPACE}/governance/review-ledger.json`);
+            const result = validatePullRequestGovernance({
+              body,
+              ledger,
+              pullRequestHeadSha: context.payload.pull_request?.head?.sha ?? ""
             });
 
-            if (missing.length > 0) {
-              core.setFailed(
-                `Pull request checklist is incomplete. Missing checked items: ${missing.join("; ")}`
-              );
+            if (result.errors.length > 0) {
+              core.setFailed(result.errors.join("\n"));
             }
