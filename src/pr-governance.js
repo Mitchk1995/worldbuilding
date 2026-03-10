@@ -184,13 +184,12 @@ export function validatePullRequestGovernance({
     headSha: pullRequestHeadSha
   });
   let effectiveReviewEvidence = reviewEvidence;
-  let allowPostReviewAdvance = false;
+  let allowPostReviewAdvance = canAcceptPostReviewAdvance(changedPathsSinceReviewedHead);
 
   if (errors.length === 0 && !effectiveReviewEvidence && ledger) {
     const legacy = buildLegacyReviewEvidence({ binding, ledger });
     errors.push(...legacy.errors);
     effectiveReviewEvidence = legacy.reviewEvidence;
-    allowPostReviewAdvance = canAcceptPostReviewAdvance(changedPathsSinceReviewedHead);
   }
 
   if (errors.length === 0) {

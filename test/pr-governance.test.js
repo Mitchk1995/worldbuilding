@@ -179,6 +179,17 @@ test("validatePullRequestGovernance still allows the legacy ledger-only post-rev
   assert.deepEqual(result.errors, []);
 });
 
+test("validatePullRequestGovernance allows the trusted ledger-only post-review commit path", () => {
+  const result = validatePullRequestGovernance({
+    body: createPrBody(),
+    reviewEvidence: createReviewEvidence({ reviewedHeadSha: "oldsha" }),
+    pullRequestHeadSha: "newsha",
+    changedPathsSinceReviewedHead: ["governance/review-ledger.json"]
+  });
+
+  assert.deepEqual(result.errors, []);
+});
+
 test("validatePullRequestGovernance rejects legacy ledger records whose completion head conflicts with the latest reviews", () => {
   const ledger = createLedger();
   ledger.workItems[0].reviewedHeadSha = "oldsha";
