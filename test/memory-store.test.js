@@ -4,7 +4,10 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { buildMissionControlBrief } from "../src/mission-control.js";
+import {
+  buildMissionControlBrief,
+  buildMissionControlPageContent
+} from "../src/mission-control.js";
 import { createMemoryStore } from "../src/memory/store.js";
 import { searchWorkspaceText } from "../src/repo-search.js";
 import { seedInitialMemory } from "../src/memory/seed.js";
@@ -977,6 +980,51 @@ test("mission control brief reflects current repo state and memory hygiene", () 
   );
   assert.match(brief, /Operator memory is currently clean/);
   assert.match(brief, /Dashboard sync is still too manual/);
+
+  store.close();
+});
+
+test("mission control brief hides deprioritized reviewer identity risk for solo repo mode", () => {
+  const repoDir = initTempRepo();
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-mission-control-solo-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  seedInitialMemory(store);
+  store.recordOperatorFailure({
+    title: "Independent review identity can be spoofed",
+    details: "Reviewer labels alone cannot prove a different actor performed the review."
+  });
+  store.recordOperatorSteering({
+    kind: "solo-review-scope",
+    note: "For this solo repo, keep second-pass review but do not treat reviewer identity hardening as a top dashboard risk."
+  });
+
+  const brief = buildMissionControlBrief(store, { cwd: repoDir }).content;
+
+  assert.doesNotMatch(brief, /Independent review identity can still be spoofed/);
+
+  store.close();
+});
+
+test("mission control page content builds visual dashboard blocks and preserves source databases", () => {
+  const repoDir = initTempRepo();
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-mission-control-page-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  seedInitialMemory(store);
+
+  const content = buildMissionControlPageContent(store, { cwd: repoDir });
+
+  assert.match(content, /## Control Center/);
+  assert.match(content, /## Live Boards/);
+  assert.match(content, /\t\t\*\*Build State\*\*/);
+  assert.match(content, /\t\t\*\*Open Risks\*\*/);
+  assert.match(content, /url="https:\/\/www\.notion\.so\/e991c80118a54cacbabd131c1cbd7b11" inline="true"/);
+  assert.match(content, /url="https:\/\/www\.notion\.so\/7ee1f22de76d4274995d2c40f232920a" inline="true"/);
+  assert.match(content, /## Source Anchors/);
+  assert.doesNotMatch(content, /<details>/);
+  assert.match(content, /Preserve the existing live board views and source anchors during page refreshes/);
+  assert.match(content, /inline="false" data-source-url="collection:\/\/4de60dd4-d195-4d7b-b857-0e844404fd63"/);
 
   store.close();
 });
