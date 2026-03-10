@@ -1,6 +1,73 @@
 {
-  "generatedAt": "2026-03-10T03:23:31.355Z",
+  "generatedAt": "2026-03-10T04:42:36.523Z",
   "workItems": [
+    {
+      "id": "trusted-review-record-bootstrap",
+      "title": "Add a trusted PR review-record workflow alongside the legacy gate",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "reviewedHeadSha": "c2a8d2f598c25677b548d86d6fff8aa9a5954641",
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "c2a8d2f598c25677b548d86d6fff8aa9a5954641",
+          "verdict": "pass",
+          "notes": "Checked current March 2026 GitHub Actions and branch-protection guidance through official docs and specialist review. Stage one adds a trusted pull_request_target-based review-record check lane in parallel, keeps the current required gate unchanged for bootstrap compatibility, and leaves the remaining owner-authored attestation gap explicit.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:41:24.467Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "c2a8d2f598c25677b548d86d6fff8aa9a5954641",
+          "verdict": "pass",
+          "notes": "Reviewed the bootstrap diff for coherent staged migration. Added a new trusted review-record workflow and GitHub-hosted evidence parser while keeping src/pr-governance.js backward-compatible with the legacy ledger path so the existing gate on main does not break before cutover.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:41:28.797Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "c2a8d2f598c25677b548d86d6fff8aa9a5954641",
+          "verdict": "pass",
+          "notes": "Verified from a clean committed workspace. npm test passed with 67 passing tests, node src/cli.js workspace audit reported clean true and zero entries, and npm run github:policy:audit confirmed main still matches the tracked protected-branch policy.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:41:32.913Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd60b-43c8-76c3-b000-756a9038a3e2",
+          "reviewerDisplayName": "Kepler",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "reviewedHeadSha": "c2a8d2f598c25677b548d86d6fff8aa9a5954641",
+          "verdict": "pass",
+          "notes": "Kepler independently reviewed the current stage-one bootstrap diff and found no blockers. Residual risks remain explicit: trusted evidence still relies on owner-authored comments rather than non-forgeable attestation, and the legacy ledger-based gate remains live until the follow-up cutover branch switches protection to the trusted check. Safe to land as groundwork, not sufficient to claim final trust hardening.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:41:46.680Z"
+        }
+      ]
+    },
     {
       "id": "pr-change-binding",
       "title": "Bind pull requests and review ledger entries to the exact reviewed change",
