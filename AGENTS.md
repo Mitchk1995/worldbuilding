@@ -28,6 +28,8 @@ An agentic worldbuilding system that can eventually place the user inside a livi
 ## Core boundaries
 
 - Keep operator memory separate from world memory.
+- Treat Hermes operator memory as build continuity only.
+- The world's own memory and agent system are separate future systems.
 - Do not treat transcripts as canon.
 - Do not use retrieval junk as truth.
 - Keep durable memory tiny and explicit.
@@ -52,7 +54,7 @@ Before substantial work:
 ## Build order
 
 1. Operator continuity:
-   exact Hermes durable memory plus project context loading.
+   exact Hermes durable memory plus project context loading for building the world.
 2. Canon engine:
    reviewable world facts, timelines, entities, and approved changes.
 3. Simulation runtime:
@@ -68,6 +70,7 @@ Before substantial work:
 - Keep the repo small unless a new file clearly earns its place.
 - Keep `todo.json` as the single planning surface. Change direction there instead of scattering plans across chat.
 - Keep active work scope only in `todo.json` `delivery.active_item_ids`.
+- Do not treat builder continuity work as world-memory work.
 - Treat each new chat as one small build slice.
 - Do not let one chat carry multiple slices just because the thread already exists.
 - If direction changes mid-slice, update `todo.json` and `progress.md`, commit the clean stopping point, and continue in a fresh chat.
