@@ -54,7 +54,7 @@ Before substantial work:
 ## Build order
 
 1. Operator continuity:
-   exact Hermes durable memory plus project context loading for building the world.
+   exact Hermes durable memory plus project context loading for builder continuity while the world is being built.
 2. Canon engine:
    reviewable world facts, timelines, entities, and approved changes.
 3. Simulation runtime:
@@ -75,5 +75,6 @@ Before substantial work:
 - Do not let one chat carry multiple slices just because the thread already exists.
 - If direction changes mid-slice, update `todo.json` and `progress.md`, commit the clean stopping point, and continue in a fresh chat.
 - End each slice with a short handoff in `progress.md` so the next chat can start cleanly without depending on thread history.
+- Rewrite `progress.md` to the current handoff state. Do not turn it into an append-only log.
 - Keep PRs small by mapping each change slice to one active item id, or two ids only when they are explicitly coupled.
 - Once a clean item is tested and committed, merge it to `main` immediately and delete the work branch. Do not leave finished work stranded on a side branch.
