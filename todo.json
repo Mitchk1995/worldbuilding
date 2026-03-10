@@ -15,7 +15,7 @@
   "delivery": {
     "one_pr_per_item": true,
     "max_active_pr_items": 1,
-    "rule": "A PR should close one todo item id or one clearly coupled pair. If work spills into a different goal, split it."
+    "rule": "A PR should close one todo item id or one clearly coupled pair. If work spills into a different goal, split it. Once the item is clean and green, merge it to main immediately and delete the work branch."
   },
   "items": [
     {
