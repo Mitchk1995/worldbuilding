@@ -19,6 +19,14 @@ export {
   validateReviewEvidence
 } from "./pr-review-evidence-core.js";
 
+function latestReviewsByType(reviews) {
+  const latest = new Map();
+  for (const review of reviews) {
+    latest.set(review.reviewType, review);
+  }
+  return latest;
+}
+
 function runGh(args, { input = null } = {}) {
   return execFileSync(resolveGhPath(), args, {
     input,

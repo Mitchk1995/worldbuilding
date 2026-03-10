@@ -3,7 +3,9 @@ import assert from "node:assert/strict";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createMemoryStore } from "../src/memory/store.js";
 import {
+  buildReviewEvidencePayload,
   buildReviewEvidenceComment,
   findLatestReviewEvidenceComment,
   isTrustedReviewEvidenceComment,
@@ -53,11 +55,62 @@ function createPayload({ reviewedHeadSha = "abc123", reviewRound = 2 } = {}) {
   };
 }
 
+function createTempStore() {
+  const dir = mkdtempSync(join(tmpdir(), "review-evidence-store-"));
+  return createMemoryStore(join(dir, "memory.sqlite"));
+}
+
 test("review evidence comment round-trips through render and parse", () => {
   const payload = createPayload();
   const comment = buildReviewEvidenceComment(payload);
 
   assert.deepEqual(parseReviewEvidenceComment(comment), payload);
+});
+
+test("buildReviewEvidencePayload reads the latest passing round from the operator store", () => {
+  const store = createTempStore();
+  const reviewedHeadSha = "abc123";
+  store.upsertProjectWorkItem({
+    id: "pr-change-binding",
+    title: "Bind pull requests and review ledger entries to the exact reviewed change",
+    status: "in_progress"
+  });
+  store.registerReviewerIdentity({
+    agentId: "019cd626-761c-7a61-b3d3-90f6e9e520f6",
+    displayName: "Ptolemy"
+  });
+
+  for (const reviewType of ["research", "code", "qa"]) {
+    store.recordProjectReview({
+      workItemId: "pr-change-binding",
+      reviewType,
+      reviewer: "main-agent",
+      verdict: "pass",
+      notes: `${reviewType} passed`,
+      reviewedHeadSha
+    });
+  }
+  store.recordProjectReview({
+    workItemId: "pr-change-binding",
+    reviewType: "independent",
+    reviewer: "subagent:019cd626-761c-7a61-b3d3-90f6e9e520f6",
+    verdict: "pass",
+    notes: "independent passed",
+    reviewedHeadSha
+  });
+  store.completeProjectWorkItem("pr-change-binding", { reviewedHeadSha });
+
+  const payload = buildReviewEvidencePayload(store, "pr-change-binding");
+
+  assert.equal(payload.workItemId, "pr-change-binding");
+  assert.equal(payload.reviewRound, 1);
+  assert.equal(payload.reviewedHeadSha, reviewedHeadSha);
+  assert.deepEqual(
+    payload.reviews.map((review) => review.reviewType),
+    ["research", "code", "qa", "independent"]
+  );
+
+  store.close();
 });
 
 test("parseReviewEvidenceComment returns null for malformed trusted payloads", () => {
