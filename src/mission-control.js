@@ -329,6 +329,9 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
   const brief = buildMissionControlBrief(store, { cwd });
   const systemsAudit = buildOperatorSystemsAudit(store, { cwd, workspaceAudit });
   const orgBrief = buildAgentOrgBrief();
+  const hasOpenProblems = !brief.problemLines.some((line) =>
+    /No open operator problem is currently recorded/.test(line)
+  );
 
   const statusCard = buildCalloutBlock({
     icon: openWork.length === 0 ? "✅" : "🛠️",
@@ -354,7 +357,7 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
 
   const riskCard = buildCalloutBlock({
     icon: "⚠️",
-    color: brief.problemLines.length > 1 ? "orange_bg" : "gray_bg",
+    color: hasOpenProblems ? "orange_bg" : "gray_bg",
     title: "Open Risks",
     lines: brief.problemLines.map((line) => line.replace(/^- /, ""))
   });
