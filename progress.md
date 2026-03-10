@@ -4,38 +4,52 @@ Date: March 10, 2026
 
 ## Current state
 
-The old operator stack has been torn out.
+Builder continuity is stable and should stay frozen unless a real defect appears.
+Canon now has an explicit boundary and approval surface.
 
-What remains on purpose:
+What exists on purpose:
 
-- exact Hermes operator memory
-- one structured todo board
+- exact Hermes operator memory for builder continuity only
+- one validated todo board
 - project context loading
-- a clean world-system blueprint
-- slice-by-slice handoff through `todo.json` and this progress file instead of one bloated chat
+- the rebuild blueprint in `docs/redesign.md`
+- the canon boundary in `docs/canon-engine.md`
+- schema checks in `src/canon/canon-schema.js`
 - no repo-local legacy sqlite stores or browser dump folders
 
-Current phase is only builder continuity.
-The future world's memory and agent runtime are not being built in this slice.
+What canon means in this repo right now:
 
-## Why this reset happened
+- approved world facts only
+- entities, locations, factions, timelines, rules of reality, and approved events
+- explicit `canon_change` approval before a change can count as canon
+- no builder memory, transcripts, or runtime beliefs mixed into world truth
 
-The previous system was wrong-shaped. It mixed operator memory, governance, review history, and future world state into one expanding pile. That created bloat instead of preserving the right context.
+What is still not built:
 
-## Immediate next targets
-
-1. Keep operator continuity stable with small curated memory only.
-   Use the vendored Hermes memory implementation as the single source of truth.
-   This is builder memory for preserving the rebuild process, not world memory.
-2. Keep the todo board simple, validated, and reviewable so direction changes stay clean.
-   The board must pass `npm run check:todo` before normal work and support clean handoff into a fresh chat.
-3. Design a canon engine that is separate from operator memory.
-4. Add a world simulation runtime that is explicitly ephemeral.
-5. Build the user insertion layer only after canon and simulation are clean.
+- a real canon store or authoring workflow beyond the minimal boundary
+- the simulation runtime
+- NPC belief or memory systems
+- player embodiment
 
 ## Non-negotiables
 
 - Operator memory is not world memory.
-- World canon must be reviewable.
+- Canon changes require explicit approval.
+- World canon must stay reviewable.
+- Runtime beliefs are not canon.
 - Session chatter is not canon.
 - New systems must stay smaller than the ones they replace.
+
+## Next slice
+
+Build the smallest simulation runtime boundary that reads canon without overwriting it.
+
+That runtime should stay explicitly ephemeral:
+
+- current scene state
+- agent goals
+- temporary beliefs
+- rumors and plans
+- consequences in motion
+
+Start from the canon boundary files instead of inventing new memory machinery.

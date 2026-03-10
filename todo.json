@@ -1,7 +1,7 @@
 {
   "direction": {
-    "current_focus": "Keep the builder's own continuity memory exact and clean while leaving the future world memory and agent system separate.",
-    "why_now": "The old stack became bloated because build memory, planning, and world-state concerns were all mixed together.",
+    "current_focus": "Build the smallest simulation runtime that can read canon without turning runtime beliefs into world truth.",
+    "why_now": "The canon boundary is now defined, so the next risk is letting the living runtime blur or overwrite approved world facts.",
     "last_changed": "2026-03-10"
   },
   "limits": {
@@ -10,7 +10,7 @@
   },
   "delivery": {
     "active_item_ids": [
-      "todo-board"
+      "simulation-runtime"
     ],
     "coupled_reason": ""
   },
@@ -24,28 +24,28 @@
     },
     {
       "id": "todo-board",
-      "status": "now",
-      "title": "Keep one simple todo board that can survive direction changes without getting garbled.",
-      "why": "Planning drift is how the repo becomes sloppy again.",
-      "done_when": "There is one validated board with clear now, next, and later work, and each active slice can be resumed in a fresh chat without hidden thread context."
+      "status": "later",
+      "title": "Keep one simple todo board that stays truthful as future slices land.",
+      "why": "Planning drift is still how the repo gets sloppy again, even after the rebuild is cleaner.",
+      "done_when": "After each clean stop, the board still has one active slice, a clear next horizon, and a clear later horizon without hidden thread context."
     },
     {
       "id": "canon-engine",
-      "status": "next",
-      "title": "Design the canon engine so world truth stays separate from operator memory and runtime beliefs.",
+      "status": "done",
+      "title": "Define the canon engine boundary so world truth stays separate from operator memory and runtime beliefs.",
       "why": "World continuity is still unsolved until canon has its own home.",
       "done_when": "Canon facts, approvals, and runtime beliefs have separate boundaries."
     },
     {
       "id": "simulation-runtime",
-      "status": "later",
+      "status": "now",
       "title": "Build the simulation runtime that reads canon without overwriting it.",
       "why": "The living world should emerge from canon instead of replacing it.",
       "done_when": "Runtime state can evolve scene by scene while canon stays authoritative."
     },
     {
       "id": "embodiment-layer",
-      "status": "later",
+      "status": "next",
       "title": "Build the player-facing layer for entering the living world.",
       "why": "The user insertion layer only makes sense after canon and simulation are stable.",
       "done_when": "The system can place the user into a persistent scene without confusing builder state with world state."
