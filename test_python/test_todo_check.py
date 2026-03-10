@@ -8,7 +8,6 @@ from tools.todo_check import inspect_todo_board, read_todo_board, validate_todo_
 
 def valid_board():
     return {
-        "version": 1,
         "direction": {
             "current_focus": "Keep the rebuild clean.",
             "why_now": "Planning drift creates slop.",
@@ -21,7 +20,6 @@ def valid_board():
         "delivery": {
             "active_item_ids": [],
             "coupled_reason": "",
-            "rule": "One PR should close one item.",
         },
         "items": [
             {
@@ -64,7 +62,7 @@ class TodoCheckTest(unittest.TestCase):
             self.assertIn("not valid JSON", result["findings"][0])
 
     def test_validator_accepts_clean_board(self):
-        self.assertEqual(validate_todo_board(valid_board(), branch_name="main"), [])
+        self.assertEqual(validate_todo_board(valid_board()), [])
 
     def test_validator_rejects_duplicate_ids(self):
         board = valid_board()
@@ -110,17 +108,17 @@ class TodoCheckTest(unittest.TestCase):
         findings = validate_todo_board(board)
         self.assertTrue(any("must contain a limits object" in finding for finding in findings))
 
-    def test_validator_enforces_branch_mapping(self):
+    def test_validator_rejects_unknown_active_items(self):
         board = valid_board()
-        board["delivery"]["active_item_ids"] = ["a"]
-        findings = validate_todo_board(board, branch_name="codex/other-thing")
-        self.assertTrue(any("must include active item id 'a'" in finding for finding in findings))
+        board["delivery"]["active_item_ids"] = ["missing"]
+        findings = validate_todo_board(board)
+        self.assertTrue(any("references unknown item 'missing'" in finding for finding in findings))
 
-    def test_validator_rejects_active_items_on_main(self):
+    def test_validator_rejects_non_now_active_items(self):
         board = valid_board()
-        board["delivery"]["active_item_ids"] = ["a"]
-        findings = validate_todo_board(board, branch_name="main")
-        self.assertTrue(any("Main branch must not keep active delivery item ids" in finding for finding in findings))
+        board["delivery"]["active_item_ids"] = ["b"]
+        findings = validate_todo_board(board)
+        self.assertTrue(any("must be in now status" in finding for finding in findings))
 
     def test_validator_requires_coupled_reason(self):
         board = valid_board()
@@ -134,7 +132,7 @@ class TodoCheckTest(unittest.TestCase):
             }
         )
         board["delivery"]["active_item_ids"] = ["a", "d"]
-        findings = validate_todo_board(board, branch_name="codex/a-d")
+        findings = validate_todo_board(board)
         self.assertTrue(any("coupled_reason is required" in finding for finding in findings))
 
 

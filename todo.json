@@ -1,5 +1,4 @@
 {
-  "version": 1,
   "direction": {
     "current_focus": "Keep operator continuity exact and clean while rebuilding the world system around canon, simulation, and embodiment.",
     "why_now": "The old stack became bloated because memory, planning, and world state were all mixed together.",
@@ -10,9 +9,10 @@
     "max_total_items": 9
   },
   "delivery": {
-    "active_item_ids": [],
-    "coupled_reason": "",
-    "rule": "A PR should close one todo item id or one clearly coupled pair. Put the active item ids in delivery.active_item_ids, include those ids in the branch name, and split the work if it spills. Once the item is clean and green, merge it to main immediately and delete the work branch."
+    "active_item_ids": [
+      "todo-board"
+    ],
+    "coupled_reason": ""
   },
   "items": [
     {
