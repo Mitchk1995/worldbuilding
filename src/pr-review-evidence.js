@@ -1,12 +1,13 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, readFileSync } from "node:fs";
+import { delimiter, join, resolve } from "node:path";
 import { createMemoryStore, DEFAULT_OPERATOR_DB_PATH } from "./memory/store.js";
 
 export const COMMENT_START = "<!-- codex-review-evidence:start -->";
 export const COMMENT_END = "<!-- codex-review-evidence:end -->";
 const DEFAULT_POLICY_PATH = resolve("governance", "review-evidence-policy.json");
 const DEFAULT_REQUIRED_REVIEW_TYPES = ["research", "code", "qa", "independent"];
+let cachedGhPath = null;
 
 function latestReviewsByType(reviews) {
   const latest = new Map();
@@ -17,7 +18,7 @@ function latestReviewsByType(reviews) {
 }
 
 function runGh(args, { input = null } = {}) {
-  return execFileSync("gh", args, {
+  return execFileSync(resolveGhPath(), args, {
     input,
     stdio: "pipe"
   }).toString();
@@ -35,6 +36,48 @@ function resolveRepoNameWithOwner() {
 
 function currentGhLogin() {
   return runGh(["api", "user", "--jq", ".login"]).trim();
+}
+
+function resolveGhPath() {
+  if (cachedGhPath) {
+    return cachedGhPath;
+  }
+
+  if (process.env.GH_PATH) {
+    cachedGhPath = process.env.GH_PATH;
+    return cachedGhPath;
+  }
+
+  const pathEntries = String(process.env.PATH ?? "").split(delimiter).filter(Boolean);
+  const candidates = process.platform === "win32" ? ["gh.exe", "gh.cmd", "gh.bat"] : ["gh"];
+
+  for (const entry of pathEntries) {
+    for (const candidate of candidates) {
+      const fullPath = join(entry, candidate);
+      if (existsSync(fullPath)) {
+        cachedGhPath = fullPath;
+        return cachedGhPath;
+      }
+    }
+  }
+
+  if (process.platform === "win32") {
+    const defaultWindowsPath = "C:\\Program Files\\GitHub CLI\\gh.exe";
+    if (existsSync(defaultWindowsPath)) {
+      cachedGhPath = defaultWindowsPath;
+      return cachedGhPath;
+    }
+  }
+
+  const locator = process.platform === "win32" ? "where.exe" : "which";
+  const raw = execFileSync(locator, ["gh"], {
+    stdio: "pipe"
+  }).toString();
+  cachedGhPath = raw.split(/\r?\n/).find(Boolean)?.trim();
+  if (!cachedGhPath) {
+    throw new Error("Unable to find the GitHub CLI. Install gh or set GH_PATH.");
+  }
+  return cachedGhPath;
 }
 
 export function buildReviewEvidencePayload(store, workItemId) {
