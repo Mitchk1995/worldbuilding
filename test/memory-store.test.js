@@ -35,6 +35,26 @@ function initTempRepo() {
   return dir;
 }
 
+function initTempRepoWithOriginAndFeatureBranch() {
+  const dir = initTempRepo();
+  const remoteDir = mkdtempSync(join(tmpdir(), "world-remote-"));
+  execFileSync("git", ["init", "--bare"], { cwd: remoteDir, stdio: "pipe" });
+  execFileSync("git", ["branch", "-M", "main"], { cwd: dir, stdio: "pipe" });
+  execFileSync("git", ["remote", "add", "origin", remoteDir], {
+    cwd: dir,
+    stdio: "pipe"
+  });
+  execFileSync("git", ["push", "-u", "origin", "main"], { cwd: dir, stdio: "pipe" });
+  execFileSync("git", ["checkout", "-b", "feature/dashboard"], {
+    cwd: dir,
+    stdio: "pipe"
+  });
+  writeFileSync(join(dir, "tracked.txt"), "feature change\n");
+  execFileSync("git", ["add", "tracked.txt"], { cwd: dir, stdio: "pipe" });
+  execFileSync("git", ["commit", "-m", "feature"], { cwd: dir, stdio: "pipe" });
+  return dir;
+}
+
 function registerSubagentReviewer(store, agentId, displayName) {
   return store.registerReviewerIdentity({ agentId, displayName });
 }
@@ -976,10 +996,44 @@ test("mission control brief reflects current repo state and memory hygiene", () 
   assert.match(brief, /local workspace is clean/);
   assert.match(
     brief,
-    /Remote main status could not be verified|local main branch is in sync with the remote main branch/
+    /Landing state could not be verified|current branch is main and is in sync with the remote main branch/
   );
   assert.match(brief, /Operator memory is currently clean/);
   assert.match(brief, /Dashboard sync is still too manual/);
+
+  store.close();
+});
+
+test("mission control brief surfaces unlanded branch work before main-line landing", () => {
+  const repoDir = initTempRepoWithOriginAndFeatureBranch();
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-mission-control-landing-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  seedInitialMemory(store);
+
+  const brief = buildMissionControlBrief(store, { cwd: repoDir }).content;
+
+  assert.match(
+    brief,
+    /current branch \(feature\/dashboard\) still has 1 commit\(s\) not yet landed on the remote main branch/i
+  );
+
+  store.close();
+});
+
+test("mission control page surfaces unlanded branch work before main-line landing", () => {
+  const repoDir = initTempRepoWithOriginAndFeatureBranch();
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-mission-control-page-landing-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  seedInitialMemory(store);
+
+  const content = buildMissionControlPageContent(store, { cwd: repoDir });
+
+  assert.match(
+    content,
+    /feature\/dashboard is 1 commit\(s\) ahead of origin\/main and not landed yet\./i
+  );
 
   store.close();
 });

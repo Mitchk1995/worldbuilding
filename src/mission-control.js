@@ -28,22 +28,22 @@ const MISSION_CONTROL_DATABASES = [
   }
 ];
 
-function gitRemoteMainState(cwd = process.cwd()) {
+function gitRefState(leftRef, rightRef, cwd = process.cwd()) {
   try {
-    const localMain = execFileSync("git", ["rev-parse", "main"], {
+    const leftSha = execFileSync("git", ["rev-parse", leftRef], {
       cwd,
       stdio: "pipe"
     })
       .toString()
       .trim();
-    const remoteMain = execFileSync("git", ["rev-parse", "origin/main"], {
+    const rightSha = execFileSync("git", ["rev-parse", rightRef], {
       cwd,
       stdio: "pipe"
     })
       .toString()
       .trim();
 
-    if (localMain === remoteMain) {
+    if (leftSha === rightSha) {
       return {
         status: "in_sync",
         ahead: 0,
@@ -53,7 +53,7 @@ function gitRemoteMainState(cwd = process.cwd()) {
 
     const [ahead, behind] = execFileSync(
       "git",
-      ["rev-list", "--left-right", "--count", "main...origin/main"],
+      ["rev-list", "--left-right", "--count", `${leftRef}...${rightRef}`],
       {
         cwd,
         stdio: "pipe"
@@ -71,6 +71,31 @@ function gitRemoteMainState(cwd = process.cwd()) {
     };
   } catch {
     return {
+      status: "unknown",
+      ahead: 0,
+      behind: 0
+    };
+  }
+}
+
+function gitLandingState(cwd = process.cwd()) {
+  try {
+    const branch = execFileSync("git", ["branch", "--show-current"], {
+      cwd,
+      stdio: "pipe"
+    })
+      .toString()
+      .trim();
+    const state = gitRefState("HEAD", "origin/main", cwd);
+    return {
+      branch: branch || "HEAD",
+      onMain: branch === "main",
+      ...state
+    };
+  } catch {
+    return {
+      branch: "HEAD",
+      onMain: false,
       status: "unknown",
       ahead: 0,
       behind: 0
@@ -96,7 +121,7 @@ export function buildMissionControlBrief(store, { cwd = process.cwd() } = {}) {
     .filter((item) => !["done", "cancelled"].includes(item.status));
   const memoryAudit = store.auditOperatorMemory();
   const workspaceAudit = getWorkspaceAudit(cwd);
-  const branchState = gitRemoteMainState(cwd);
+  const landingState = gitLandingState(cwd);
   const githubAutomationDone = workIsDone(store, "github-flow-automation");
   const reviewerTraceabilityDone = workIsDone(store, "reviewer-identity-hardening");
   const notionLayoutLimit = Boolean(
@@ -135,21 +160,39 @@ export function buildMissionControlBrief(store, { cwd = process.cwd() } = {}) {
     );
   }
 
-  if (branchState.status === "in_sync") {
-    matterLines.push("- The local main branch is in sync with the remote main branch.");
-  } else if (branchState.status === "unknown") {
-    matterLines.push("- Remote main status could not be verified from the current repo state.");
-  } else if (branchState.ahead > 0 && branchState.behind === 0) {
-    matterLines.push(
-      "- The local main branch is still ahead of the remote and should not be treated as fully landed yet."
-    );
-  } else if (branchState.behind > 0 && branchState.ahead === 0) {
-    matterLines.push(
-      "- The local main branch is behind the remote main branch and needs a refresh before the dashboard should trust it."
-    );
+  if (landingState.status === "in_sync") {
+    if (landingState.onMain) {
+      matterLines.push("- The current branch is main and is in sync with the remote main branch.");
+    } else {
+      matterLines.push(
+        "- The current branch matches the remote main branch and has no unlanded commits."
+      );
+    }
+  } else if (landingState.status === "unknown") {
+    matterLines.push("- Landing state could not be verified from the current repo state.");
+  } else if (landingState.ahead > 0 && landingState.behind === 0) {
+    if (landingState.onMain) {
+      matterLines.push(
+        "- The local main branch is still ahead of the remote and should not be treated as fully landed yet."
+      );
+    } else {
+      matterLines.push(
+        `- The current branch (${landingState.branch}) still has ${landingState.ahead} commit(s) not yet landed on the remote main branch.`
+      );
+    }
+  } else if (landingState.behind > 0 && landingState.ahead === 0) {
+    if (landingState.onMain) {
+      matterLines.push(
+        "- The local main branch is behind the remote main branch and needs a refresh before the dashboard should trust it."
+      );
+    } else {
+      matterLines.push(
+        `- The current branch (${landingState.branch}) is behind the remote main branch and needs a refresh before the dashboard should trust it.`
+      );
+    }
   } else {
     matterLines.push(
-      `- The local main branch and remote main branch have diverged (${branchState.ahead} ahead, ${branchState.behind} behind).`
+      `- The current branch (${landingState.branch}) and remote main branch have diverged (${landingState.ahead} ahead, ${landingState.behind} behind).`
     );
   }
 
@@ -219,20 +262,29 @@ function summarizeWorkCard(openWorkCount) {
   return `${openWorkCount} open build jobs need attention.`;
 }
 
-function summarizeBranchCard(branchState) {
-  if (branchState.status === "in_sync") {
-    return "Main is synced with origin/main.";
+function summarizeLandingCard(landingState) {
+  if (landingState.status === "in_sync") {
+    if (landingState.onMain) {
+      return "Main is synced with origin/main.";
+    }
+    return "Current branch matches origin/main.";
   }
-  if (branchState.status === "unknown") {
-    return "Main sync could not be verified safely.";
+  if (landingState.status === "unknown") {
+    return "Landing state could not be verified safely.";
   }
-  if (branchState.ahead > 0 && branchState.behind === 0) {
-    return "Main is ahead of origin/main and not fully landed yet.";
+  if (landingState.ahead > 0 && landingState.behind === 0) {
+    if (landingState.onMain) {
+      return "Main is ahead of origin/main and not fully landed yet.";
+    }
+    return `${landingState.branch} is ${landingState.ahead} commit(s) ahead of origin/main and not landed yet.`;
   }
-  if (branchState.behind > 0 && branchState.ahead === 0) {
-    return "Main is behind origin/main and needs refresh.";
+  if (landingState.behind > 0 && landingState.ahead === 0) {
+    if (landingState.onMain) {
+      return "Main is behind origin/main and needs refresh.";
+    }
+    return `${landingState.branch} is behind origin/main and needs refresh.`;
   }
-  return `Main has diverged from origin/main (${branchState.ahead} ahead, ${branchState.behind} behind).`;
+  return `${landingState.branch} has diverged from origin/main (${landingState.ahead} ahead, ${landingState.behind} behind).`;
 }
 
 function buildCalloutBlock({ icon, color, title, lines }) {
@@ -269,7 +321,7 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
     .filter((item) => !["done", "cancelled"].includes(item.status));
   const memoryAudit = store.auditOperatorMemory();
   const workspaceAudit = getWorkspaceAudit(cwd);
-  const branchState = gitRemoteMainState(cwd);
+  const landingState = gitLandingState(cwd);
   const brief = buildMissionControlBrief(store, { cwd });
 
   const statusCard = buildCalloutBlock({
@@ -278,10 +330,10 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
     title: "Build State",
     lines: [
       summarizeWorkCard(openWork.length),
+      summarizeLandingCard(landingState),
       workspaceAudit.clean
         ? "Workspace is clean."
-        : `${workspaceAudit.meaningfulChanges.length} meaningful change(s) are still local.`,
-      summarizeBranchCard(branchState)
+        : `${workspaceAudit.meaningfulChanges.length} meaningful change(s) are still local.`
     ]
   });
 
