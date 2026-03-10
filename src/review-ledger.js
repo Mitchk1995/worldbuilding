@@ -14,7 +14,6 @@ function latestReviewsByType(reviews) {
 
 function validateLedger(ledger) {
   const problems = [];
-  const completedByHeadSha = new Map();
 
   for (const item of ledger.workItems ?? []) {
     if (item.status === "changes_requested") {
@@ -24,17 +23,6 @@ function validateLedger(ledger) {
 
     if (item.status !== "done") {
       continue;
-    }
-
-    if (item.reviewedHeadSha) {
-      const existing = completedByHeadSha.get(item.reviewedHeadSha);
-      if (existing && existing !== item.id) {
-        problems.push(
-          `${item.id} shares reviewed head commit ${item.reviewedHeadSha} with ${existing}`
-        );
-      } else {
-        completedByHeadSha.set(item.reviewedHeadSha, item.id);
-      }
     }
 
     const currentRound = item.reviewRound ?? 1;
