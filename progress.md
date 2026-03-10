@@ -13,6 +13,7 @@ What remains on purpose:
 - project context loading
 - a clean world-system blueprint
 - slice-by-slice handoff through `todo.json` and this progress file instead of one bloated chat
+- no repo-local legacy sqlite stores or browser dump folders
 
 Current phase is only builder continuity.
 The future world's memory and agent runtime are not being built in this slice.
