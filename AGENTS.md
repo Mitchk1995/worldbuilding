@@ -68,5 +68,9 @@ Before substantial work:
 - Keep the repo small unless a new file clearly earns its place.
 - Keep `todo.json` as the single planning surface. Change direction there instead of scattering plans across chat.
 - Keep active work scope only in `todo.json` `delivery.active_item_ids`.
+- Treat each new chat as one small build slice.
+- Do not let one chat carry multiple slices just because the thread already exists.
+- If direction changes mid-slice, update `todo.json` and `progress.md`, commit the clean stopping point, and continue in a fresh chat.
+- End each slice with a short handoff in `progress.md` so the next chat can start cleanly without depending on thread history.
 - Keep PRs small by mapping each change slice to one active item id, or two ids only when they are explicitly coupled.
 - Once a clean item is tested and committed, merge it to `main` immediately and delete the work branch. Do not leave finished work stranded on a side branch.
