@@ -1,6 +1,85 @@
 {
-  "generatedAt": "2026-03-10T01:08:01.826Z",
+  "generatedAt": "2026-03-10T03:06:04.787Z",
   "workItems": [
+    {
+      "id": "governance-gap-hardening",
+      "title": "Close governance loopholes and tighten GitHub trust gaps before agent-company buildout",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Checked March 2026 GitHub primary sources and live repo policy. Required checks can still be pinned to a trusted source app, delete-branch-on-merge remains the correct repo setting, and the remaining explicit gaps are merged-only auto cleanup and admin self-bypass risk in a solo public repo.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:04:45.622Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Hardened the source-of-truth work state machine so generic upsert and status paths cannot stamp work done, reopening settled work starts a fresh review round, workspace cleanliness now fails closed when Git state is unreadable, and mission-control wording no longer pretends unverifiable workspace state is clean.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:04:52.400Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Verified with node --test test/memory-store.test.js, npm test, and npm run github:policy:audit. Added regression coverage for direct-done upsert bypass, reopened-work stale-approval reuse, and fail-closed workspace enforcement when Git state cannot be verified.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:04:56.384Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd599-f71b-7bc0-b3ac-8881531931c6",
+          "reviewerDisplayName": "Tesla",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "pass",
+          "notes": "Independent reviewer Tesla found no remaining bypass in the targeted areas. They confirmed generic paths can no longer mark work done, reopening settled work now forces a fresh review round, workspace verification fails closed instead of silently clean, and the remaining explicit governance gap is that PR paperwork is not yet tightly bound to the exact change under review.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:05:01.037Z"
+        }
+      ]
+    },
+    {
+      "id": "system-scrutiny-2026",
+      "title": "Run critical multi-agent scrutiny pass against current operator systems and March 2026 practices",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "in_progress",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": []
+    },
     {
       "id": "dashboard-landing-truthfulness",
       "title": "Surface unlanded branch work in mission control",
