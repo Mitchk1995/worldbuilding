@@ -5,6 +5,7 @@ import {
   DEFAULT_WORLD_DB_PATH
 } from "./memory/store.js";
 import { seedInitialMemory } from "./memory/seed.js";
+import { searchWorkspaceText } from "./repo-search.js";
 import { buildWorkspaceDirtyMessage, getWorkspaceAudit } from "./workspace.js";
 
 function printUsage() {
@@ -31,6 +32,7 @@ function printUsage() {
   node src/cli.js audit list [workId] [dbPath]
   node src/cli.js audit-memory [dbPath]
   node src/cli.js workspace audit
+  node src/cli.js workspace search <query> [root...]
   node src/cli.js entity <id> <kind> <name> [dbPath]
   node src/cli.js event <type> <summary> [entityId] [dbPath]
   node src/cli.js memory <entityId|global> <scope> <type> <content> [dbPath]
@@ -65,6 +67,22 @@ function readOptionalStatus(value, allowed) {
     return null;
   }
   throw new Error(`Unknown status: ${value}. Allowed statuses: ${allowed.join(", ")}.`);
+}
+
+function readOptionalPositiveInteger(value, { nextValue = null } = {}) {
+  if (!value) {
+    return null;
+  }
+
+  if (nextValue === null && existsSync(value)) {
+    return null;
+  }
+
+  if (/^\d+$/.test(value) && Number(value) > 0) {
+    return Number(value);
+  }
+
+  return null;
 }
 
 function runDemo(store) {
@@ -399,19 +417,49 @@ function main() {
   }
 
   if (command === "audit-memory") {
-    const dbPath = readDbPath(args, 1);
+    const maybeStaleDays = readOptionalPositiveInteger(args[1], {
+      nextValue: args[2] ?? null
+    });
+    const dbPath = maybeStaleDays === null ? readDbPath(args, 1) : readDbPath(args, 2);
     const store = createMemoryStore(dbPath);
-    console.log(JSON.stringify(store.auditOperatorMemory(), null, 2));
+    console.log(
+      JSON.stringify(
+        store.auditOperatorMemory(
+          maybeStaleDays === null ? undefined : { staleDays: maybeStaleDays }
+        ),
+        null,
+        2
+      )
+    );
     store.close();
     return;
   }
 
   if (command === "workspace") {
-    if (args[1] !== "audit") {
-      throw new Error("Workspace supports only the 'audit' action.");
+    if (args[1] === "audit") {
+      console.log(JSON.stringify(getWorkspaceAudit(), null, 2));
+      return;
     }
-    console.log(JSON.stringify(getWorkspaceAudit(), null, 2));
-    return;
+
+    if (args[1] === "search") {
+      const query = args[2];
+      const roots = args.slice(3);
+      if (!query) {
+        throw new Error("Workspace search requires <query>.");
+      }
+      console.log(
+        JSON.stringify(
+          searchWorkspaceText(query, {
+            roots
+          }),
+          null,
+          2
+        )
+      );
+      return;
+    }
+
+    throw new Error("Workspace supports only the 'audit' and 'search' actions.");
   }
 
   if (command === "entity") {

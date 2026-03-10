@@ -5,6 +5,7 @@ import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createMemoryStore } from "../src/memory/store.js";
+import { searchWorkspaceText } from "../src/repo-search.js";
 import { seedInitialMemory } from "../src/memory/seed.js";
 import {
   classifyWorkspaceEntries,
@@ -424,6 +425,31 @@ test("duplicate audit does not flag simple numbered batches as likely duplicates
   store.close();
 });
 
+test("operator memory audit flags stale open records and brief surfaces hygiene counts", () => {
+  const store = createTempStore();
+  const stale = store.recordOperatorFailure({
+    title: "Stale issue",
+    details: "This warning has been open for long enough to need a review."
+  });
+  const oldTimestamp = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString();
+  store.db.prepare(
+    `UPDATE operator_failures
+     SET created_at = ?, updated_at = ?
+     WHERE id = ?`
+  ).run(oldTimestamp, oldTimestamp, stale.id);
+
+  const audit = store.auditOperatorMemory();
+  assert.equal(audit.summary.staleOpenRecords, 1);
+  assert.equal(audit.staleOpenRecords[0].label, "Stale issue");
+
+  const brief = store.buildOperatorBrief().content;
+  assert.match(brief, /Memory hygiene/);
+  assert.match(brief, /stale open records/);
+  assert.match(brief, /Stale issue/);
+
+  store.close();
+});
+
 test("multiple store handles can open the same database without startup lock failures", () => {
   const dir = mkdtempSync(join(tmpdir(), "world-memory-shared-"));
   const dbPath = join(dir, "memory.sqlite");
@@ -767,6 +793,28 @@ test("list commands accept bare relative database filenames", () => {
   assert.match(output, /relative-db/);
 });
 
+test("audit-memory still accepts bare numeric database filenames", () => {
+  const dir = mkdtempSync(join(tmpdir(), "world-memory-cli-numeric-"));
+  const dbPath = join(dir, "2026");
+  const store = createMemoryStore(dbPath);
+  store.recordOperatorFailure({
+    title: "numeric-db",
+    details: "Numeric bare database filenames should still be treated as paths."
+  });
+  store.close();
+
+  const cliPath = join(process.cwd(), "src", "cli.js");
+  const output = execFileSync("node", [cliPath, "audit-memory", "2026"], {
+    cwd: dir,
+    stdio: "pipe"
+  }).toString();
+  const audit = JSON.parse(output);
+
+  assert.equal(audit.summary.exactDuplicates, 0);
+  assert.equal(audit.summary.likelyDuplicates, 0);
+  assert.equal(audit.summary.staleOpenRecords, 0);
+});
+
 test("list commands reject unknown status tokens instead of creating stray databases", () => {
   const cliPath = join(process.cwd(), "src", "cli.js");
 
@@ -847,6 +895,52 @@ test("workspace audit reports dirty files in a temp git repo", () => {
     ),
     true
   );
+});
+
+test("workspace search falls back to built-in javascript search", () => {
+  const repoDir = initTempRepo();
+  mkdirSync(join(repoDir, "docs"), { recursive: true });
+  writeFileSync(
+    join(repoDir, "docs", "notes.md"),
+    "Alpha line\nMemory workflow should stay clean.\n"
+  );
+
+  const result = searchWorkspaceText("memory workflow", {
+    cwd: repoDir,
+    roots: ["docs"],
+    engine: "javascript"
+  });
+
+  assert.equal(result.engine, "javascript");
+  assert.equal(result.matches.length, 1);
+  assert.equal(result.matches[0].path, "docs/notes.md");
+  assert.equal(result.matches[0].lineNumber, 2);
+});
+
+test("workspace search javascript fallback accepts file roots and warns on missing roots", () => {
+  const repoDir = initTempRepo();
+  mkdirSync(join(repoDir, "docs"), { recursive: true });
+  writeFileSync(
+    join(repoDir, "docs", "notes.md"),
+    "Alpha line\nMemory workflow should stay clean.\n"
+  );
+
+  const fileResult = searchWorkspaceText("memory workflow", {
+    cwd: repoDir,
+    roots: ["docs/notes.md"],
+    engine: "javascript"
+  });
+  assert.equal(fileResult.matches.length, 1);
+  assert.equal(fileResult.matches[0].path, "docs/notes.md");
+
+  const missingRootResult = searchWorkspaceText("memory workflow", {
+    cwd: repoDir,
+    roots: ["docs/missing.md"],
+    engine: "javascript"
+  });
+  assert.equal(missingRootResult.matches.length, 0);
+  assert.equal(missingRootResult.warnings.length, 1);
+  assert.match(missingRootResult.warnings[0], /Missing root/);
 });
 
 test("work complete via cli refuses a dirty workspace", () => {
