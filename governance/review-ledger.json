@@ -1,12 +1,74 @@
 {
-  "generatedAt": "2026-03-10T00:59:13.368Z",
+  "generatedAt": "2026-03-10T01:07:08.446Z",
   "workItems": [
+    {
+      "id": "dashboard-landing-truthfulness",
+      "title": "Surface unlanded branch work in mission control",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "in_progress",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Checked the live branch-versus-origin/main behavior and verified the dashboard was previously overstating settled state when work lived only on the feature branch. Confirmed the updated brief/page wording now reports unlanded branch commits explicitly.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.137Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Ran npm test, node src/cli.js brief mission-control, and node src/cli.js brief mission-control-page. Confirmed the branch now shows as ahead of origin/main and not landed yet, and added regression coverage for both the brief and page outputs.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.221Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Reviewed the new landing-state comparison logic, ensuring the dashboard now compares HEAD to origin/main, keeps main-branch behavior intact, and reuses the same landing summary in both the brief and visual page.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.228Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd53c-208d-76a0-b72b-290c60430e09",
+          "reviewerDisplayName": "Mill",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "pass",
+          "notes": "Independent review found no remaining blocking findings. Confirmed the follow-up now covers the unlanded-branch truthfulness path in both the brief and the visual page, with regression tests protecting both surfaces.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.243Z"
+        }
+      ]
+    },
     {
       "id": "dashboard-open-problems",
       "title": "Reduce remaining mission-control open problems",
       "lane": "operator",
       "owner": "main-agent",
-      "status": "in_progress",
+      "status": "done",
       "riskLevel": "normal",
       "reviewRound": 1,
       "requiredReviewTypes": [
