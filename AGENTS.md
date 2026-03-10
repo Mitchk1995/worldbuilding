@@ -67,3 +67,4 @@ Before substantial work:
 - Keep the repo small unless a new file clearly earns its place.
 - Keep `todo.json` as the single planning surface. Change direction there instead of scattering plans across chat.
 - Keep PRs small by mapping each PR to one todo item id unless two items are explicitly coupled.
+- Once a clean item is tested and committed, merge it to `main` immediately and delete the work branch. Do not leave finished work stranded on a side branch.
