@@ -1,23 +1,12 @@
 {
   "name": "worldbuilding",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "init:memory": "node src/cli.js init",
-    "seed:memory": "node src/cli.js seed",
-    "memory:brief": "node src/cli.js brief operator",
-    "ops:audit": "node src/cli.js ops audit",
-    "mission-control:brief": "node src/cli.js brief mission-control",
-    "mission-control:page": "node src/cli.js brief mission-control-page",
-    "memory:search": "node src/cli.js search",
-    "workspace:search": "node src/cli.js workspace search",
-    "github:policy:audit": "node src/github-policy.js audit",
-    "github:policy:apply": "node src/github-policy.js apply",
-    "reviews:sync": "node src/review-ledger.js sync",
-    "reviews:check": "node src/review-ledger.js check",
-    "review-evidence:render": "node src/pr-review-evidence.js render",
-    "review-evidence:publish": "node src/pr-review-evidence.js publish",
-    "test": "node --test"
+    "check:todo": "node src/check-todo.js",
+    "test:js": "node --test",
+    "test:py": "python -m unittest discover -s test_python -p \"test_*.py\"",
+    "test": "npm run check:todo && npm run test:js && npm run test:py"
   }
 }
