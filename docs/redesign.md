@@ -18,6 +18,7 @@ This is for the builder, not the world.
   one human-readable rebuild record
 
 This layer exists so the build process keeps its bearings without turning every conversation into permanent sludge.
+It is not the world's memory system.
 
 ### 2. Canon engine
 
@@ -44,6 +45,7 @@ This is the living layer.
 - consequences
 
 This layer is allowed to be wrong, partial, emotional, and in motion. It is not canon by default.
+Its memory, beliefs, and agent behavior are separate from builder continuity.
 
 ### 4. Embodiment
 
