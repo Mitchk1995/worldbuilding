@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-03-10T00:26:28.936Z",
+  "generatedAt": "2026-03-10T00:27:11.228Z",
   "workItems": [
     {
       "id": "notion-sync-hardening",
       "title": "Improve mission-control truthfulness, sync flow, and readability",
       "lane": "operator",
       "owner": "main-agent",
-      "status": "in_progress",
+      "status": "done",
       "riskLevel": "normal",
       "reviewRound": 2,
       "requiredReviewTypes": [
