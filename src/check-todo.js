@@ -1,6 +1,23 @@
+import { execFileSync } from "node:child_process";
 import { inspectTodoBoard } from "./todo-system.js";
 
-const result = inspectTodoBoard(process.cwd());
+function currentBranchName(cwd) {
+  try {
+    return execFileSync("git", ["branch", "--show-current"], {
+      cwd,
+      stdio: "pipe"
+    })
+      .toString()
+      .trim();
+  } catch {
+    return null;
+  }
+}
+
+const cwd = process.cwd();
+const result = inspectTodoBoard(cwd, {
+  branchName: currentBranchName(cwd)
+});
 
 if (!result.ok) {
   for (const finding of result.findings) {
