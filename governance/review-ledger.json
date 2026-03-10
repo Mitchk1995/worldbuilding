@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-03-10T03:05:07.727Z",
+  "generatedAt": "2026-03-10T03:06:04.787Z",
   "workItems": [
     {
       "id": "governance-gap-hardening",
       "title": "Close governance loopholes and tighten GitHub trust gaps before agent-company buildout",
       "lane": "operator",
       "owner": "main-agent",
-      "status": "in_progress",
+      "status": "done",
       "riskLevel": "normal",
       "reviewRound": 1,
       "requiredReviewTypes": [
