@@ -47,6 +47,7 @@ Before substantial work:
 7. Run `git status --short`.
 8. If the work depends on current platforms, models, or best practices, verify with current sources first.
 9. If Hermes behavior matters, inspect the local Hermes clone before inventing a replacement.
+10. For planning, architecture, or system-shape changes, get a focused subagent review for overengineering, slop buildup, and simpler alternatives before calling the work clean.
 
 ## Build order
 
