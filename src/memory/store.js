@@ -2,6 +2,7 @@ import { existsSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
+import { buildOperatorSystemsAudit } from "../operator-audit.js";
 import { SCHEMA_SQL } from "./schema.js";
 
 const DEFAULT_OPERATOR_DB_PATH = resolve("data", "operator-memory.sqlite");
@@ -939,6 +940,7 @@ export class MemoryStore {
        LIMIT ?`
     ).all(limit);
     const memoryAudit = this.auditOperatorMemory();
+    const systemsAudit = buildOperatorSystemsAudit(this);
 
     const lines = [
       "Operator Memory Brief",
@@ -986,6 +988,14 @@ export class MemoryStore {
     for (const item of memoryAudit.staleOpenRecords.slice(0, 3)) {
       lines.push(`- stale ${item.lane}: ${item.label} (${item.ageDays} days old)`);
     }
+
+    lines.push("", "Operator audits:");
+    lines.push(
+      `- overengineering: ${systemsAudit.overengineering.status} (${systemsAudit.metrics.openSteerings} open steerings, ${systemsAudit.metrics.openFailures} open failures, ${systemsAudit.metrics.openWorkItems} open work item(s))`
+    );
+    lines.push(
+      `- efficiency: ${systemsAudit.efficiency.status} (${systemsAudit.metrics.orphanWorkBranches} orphan work branch(es), ${systemsAudit.metrics.openWorkWithoutBranch} open work item(s) without a branch)`
+    );
 
     return this.#storeContextPack({
       packKind: "operator_brief",
