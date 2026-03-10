@@ -1,6 +1,128 @@
 {
-  "generatedAt": "2026-03-10T05:18:56.188Z",
+  "generatedAt": "2026-03-10T05:41:22.967Z",
   "workItems": [
+    {
+      "id": "system-scrutiny-2026",
+      "title": "Run critical multi-agent scrutiny pass against current operator systems and March 2026 practices",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "reviewedHeadSha": "1ab824897b14491d1358fb0a15f31e871b1eea88",
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "1ab824897b14491d1358fb0a15f31e871b1eea88",
+          "verdict": "pass",
+          "notes": "Checked current March 2026 public guidance through specialist research. The resulting shape stays small on purpose: a derived operator audit layer, a compact specialist-seat roster, and mission-control risk surfacing driven by real open failures rather than the old narrow title shortcuts. Current guidance still favors a small orchestrator-plus-specialists model with explicit handoffs, traceable evals, and role boundaries over adding many generic agents.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T05:40:01.046Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "1ab824897b14491d1358fb0a15f31e871b1eea88",
+          "verdict": "pass",
+          "notes": "Added a reusable operator audit module with explicit overengineering and efficiency signals, added an inspectable agent-org brief with role personas and responsibilities, surfaced the audits in the operator brief and mission-control page, added an ops audit CLI command and package script, and changed mission-control open-risk summaries to reflect actual open failures instead of only a hard-coded shortlist.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T05:40:08.743Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "1ab824897b14491d1358fb0a15f31e871b1eea88",
+          "verdict": "pass",
+          "notes": "From clean head 1ab824897b14491d1358fb0a15f31e871b1eea88, npm test passed, npm run ops:audit produced the new derived audit report, node src/cli.js brief org returned the specialist-seat roster, and node src/cli.js workspace audit confirmed a clean workspace.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T05:40:16.098Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd626-761c-7a61-b3d3-90f6e9e520f6",
+          "reviewerDisplayName": "Ptolemy",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "reviewedHeadSha": "1ab824897b14491d1358fb0a15f31e871b1eea88",
+          "verdict": "pass",
+          "notes": "Ptolemy independently reviewed committed head 1ab824897b14491d1358fb0a15f31e871b1eea88 and found no remaining issues in the operator audit layer, mission-control risk surfacing, CLI ops audit command, or agent-org brief. The final review specifically rechecked the risk-card emphasis fix and confirmed the focused test pass stayed clean.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T05:40:23.498Z"
+        }
+      ]
+    },
+    {
+      "id": "pr-change-binding",
+      "title": "Bind pull requests and review ledger entries to the exact reviewed change",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "cancelled",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "reviewedHeadSha": null,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "ee53c01694a32f1778036d0c0caba9b77ae9eaf6",
+          "verdict": "pass",
+          "notes": "Checked current GitHub primary sources for pull request workflow context and checkout behavior. The fix uses the pull request head SHA from workflow context and checks out that exact head so review binding is validated against the same change the PR is proposing.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:21:00.762Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "ee53c01694a32f1778036d0c0caba9b77ae9eaf6",
+          "verdict": "pass",
+          "notes": "Verified with npm test and npm run reviews:check after adding regression coverage for commit-bound completion, commit-bound audits, duplicate reviewed-head rejection in the ledger, and PR-governance binding checks for missing or mismatched work item, round, and head SHA.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:21:00.852Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "ee53c01694a32f1778036d0c0caba9b77ae9eaf6",
+          "verdict": "pass",
+          "notes": "Bound governance to a single reviewed work item and review round, stamped completion and audits with the current head commit, carried that evidence into the review ledger, and made PR governance fail when checklist, work item, review round, completion head, or per-review head evidence drift away from the current PR head.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T03:21:00.858Z"
+        }
+      ]
+    },
     {
       "id": "legacy-review-record-recovery",
       "title": "Recover from broken main review-record gate and cut over to the trusted review-record check",
@@ -328,61 +450,6 @@
       ]
     },
     {
-      "id": "pr-change-binding",
-      "title": "Bind pull requests and review ledger entries to the exact reviewed change",
-      "lane": "operator",
-      "owner": "main-agent",
-      "status": "in_progress",
-      "riskLevel": "normal",
-      "reviewRound": 1,
-      "reviewedHeadSha": null,
-      "requiredReviewTypes": [
-        "research",
-        "code",
-        "qa",
-        "independent"
-      ],
-      "acceptance": [],
-      "reviews": [
-        {
-          "reviewType": "research",
-          "reviewer": "main-agent",
-          "reviewerDisplayName": null,
-          "reviewerIdentityStatus": null,
-          "reviewerRegistered": false,
-          "reviewedHeadSha": "ee53c01694a32f1778036d0c0caba9b77ae9eaf6",
-          "verdict": "pass",
-          "notes": "Checked current GitHub primary sources for pull request workflow context and checkout behavior. The fix uses the pull request head SHA from workflow context and checks out that exact head so review binding is validated against the same change the PR is proposing.",
-          "reviewRound": 1,
-          "createdAt": "2026-03-10T03:21:00.762Z"
-        },
-        {
-          "reviewType": "qa",
-          "reviewer": "main-agent",
-          "reviewerDisplayName": null,
-          "reviewerIdentityStatus": null,
-          "reviewerRegistered": false,
-          "reviewedHeadSha": "ee53c01694a32f1778036d0c0caba9b77ae9eaf6",
-          "verdict": "pass",
-          "notes": "Verified with npm test and npm run reviews:check after adding regression coverage for commit-bound completion, commit-bound audits, duplicate reviewed-head rejection in the ledger, and PR-governance binding checks for missing or mismatched work item, round, and head SHA.",
-          "reviewRound": 1,
-          "createdAt": "2026-03-10T03:21:00.852Z"
-        },
-        {
-          "reviewType": "code",
-          "reviewer": "main-agent",
-          "reviewerDisplayName": null,
-          "reviewerIdentityStatus": null,
-          "reviewerRegistered": false,
-          "reviewedHeadSha": "ee53c01694a32f1778036d0c0caba9b77ae9eaf6",
-          "verdict": "pass",
-          "notes": "Bound governance to a single reviewed work item and review round, stamped completion and audits with the current head commit, carried that evidence into the review ledger, and made PR governance fail when checklist, work item, review round, completion head, or per-review head evidence drift away from the current PR head.",
-          "reviewRound": 1,
-          "createdAt": "2026-03-10T03:21:00.858Z"
-        }
-      ]
-    },
-    {
       "id": "governance-gap-hardening",
       "title": "Close governance loopholes and tighten GitHub trust gaps before agent-company buildout",
       "lane": "operator",
@@ -448,24 +515,6 @@
           "createdAt": "2026-03-10T03:05:01.037Z"
         }
       ]
-    },
-    {
-      "id": "system-scrutiny-2026",
-      "title": "Run critical multi-agent scrutiny pass against current operator systems and March 2026 practices",
-      "lane": "operator",
-      "owner": "main-agent",
-      "status": "in_progress",
-      "riskLevel": "normal",
-      "reviewRound": 1,
-      "reviewedHeadSha": null,
-      "requiredReviewTypes": [
-        "research",
-        "code",
-        "qa",
-        "independent"
-      ],
-      "acceptance": [],
-      "reviews": []
     },
     {
       "id": "dashboard-landing-truthfulness",
