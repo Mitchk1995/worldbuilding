@@ -8,6 +8,7 @@
     "seed:memory": "node src/cli.js seed",
     "memory:brief": "node src/cli.js brief operator",
     "mission-control:brief": "node src/cli.js brief mission-control",
+    "mission-control:page": "node src/cli.js brief mission-control-page",
     "memory:search": "node src/cli.js search",
     "workspace:search": "node src/cli.js workspace search",
     "github:policy:audit": "node src/github-policy.js audit",

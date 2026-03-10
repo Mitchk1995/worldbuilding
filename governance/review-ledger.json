@@ -1,6 +1,130 @@
 {
-  "generatedAt": "2026-03-10T00:27:11.228Z",
+  "generatedAt": "2026-03-10T01:08:01.826Z",
   "workItems": [
+    {
+      "id": "dashboard-landing-truthfulness",
+      "title": "Surface unlanded branch work in mission control",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Checked the live branch-versus-origin/main behavior and verified the dashboard was previously overstating settled state when work lived only on the feature branch. Confirmed the updated brief/page wording now reports unlanded branch commits explicitly.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.137Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Ran npm test, node src/cli.js brief mission-control, and node src/cli.js brief mission-control-page. Confirmed the branch now shows as ahead of origin/main and not landed yet, and added regression coverage for both the brief and page outputs.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.221Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Reviewed the new landing-state comparison logic, ensuring the dashboard now compares HEAD to origin/main, keeps main-branch behavior intact, and reuses the same landing summary in both the brief and visual page.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.228Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd53c-208d-76a0-b72b-290c60430e09",
+          "reviewerDisplayName": "Mill",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "pass",
+          "notes": "Independent review found no remaining blocking findings. Confirmed the follow-up now covers the unlanded-branch truthfulness path in both the brief and the visual page, with regression tests protecting both surfaces.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T01:07:03.243Z"
+        }
+      ]
+    },
+    {
+      "id": "dashboard-open-problems",
+      "title": "Reduce remaining mission-control open problems",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Reviewed the dashboard generator and CLI changes for truthfulness, preserving existing Notion board anchors, solo-repo risk surfacing, and fallback behavior when live view URLs are absent.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T00:56:22.075Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Checked the live Notion mission-control page behavior directly through fetch and replace-content attempts, confirmed inline board views can work visually, and captured the refresh-safety rule needed to preserve child database view anchors during updates.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T00:56:22.081Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Ran npm test, node src/cli.js brief mission-control, node src/cli.js brief mission-control-page, node src/cli.js audit-memory, and node src/cli.js workspace audit. Also refreshed the live Notion page and fetched it afterward to verify the visual cards and live boards rendered with preserved anchors.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T00:56:22.141Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd53c-208d-76a0-b72b-290c60430e09",
+          "reviewerDisplayName": "Mill",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "pass",
+          "notes": "Independent review found no blocking issues in the visual mission-control generator or live Notion refresh flow. Verified the dashboard now uses real status cards and live boards, keeps the solo-repo risk focus, and the remaining blocker before this audit was only that the second-agent review had not been formally recorded yet.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T00:59:13.130Z"
+        }
+      ]
+    },
     {
       "id": "notion-sync-hardening",
       "title": "Improve mission-control truthfulness, sync flow, and readability",

@@ -5,7 +5,10 @@ import {
   DEFAULT_WORLD_DB_PATH
 } from "./memory/store.js";
 import { seedInitialMemory } from "./memory/seed.js";
-import { buildMissionControlBrief } from "./mission-control.js";
+import {
+  buildMissionControlBrief,
+  buildMissionControlPageContent
+} from "./mission-control.js";
 import { searchWorkspaceText } from "./repo-search.js";
 import { buildWorkspaceDirtyMessage, getWorkspaceAudit } from "./workspace.js";
 
@@ -16,6 +19,7 @@ function printUsage() {
   node src/cli.js brief operator [dbPath]
   node src/cli.js brief entity <entityId> [dbPath]
   node src/cli.js brief mission-control [dbPath]
+  node src/cli.js brief mission-control-page [dbPath]
   node src/cli.js steering <kind> <note> [dbPath]
   node src/cli.js steering list [status] [dbPath]
   node src/cli.js steering status <idOrKind> <status> [dbPath]
@@ -174,6 +178,14 @@ function main() {
       const dbPath = readDbPath(args, 2);
       const store = createMemoryStore(dbPath);
       console.log(buildMissionControlBrief(store).content);
+      store.close();
+      return;
+    }
+
+    if (kind === "mission-control-page") {
+      const dbPath = readDbPath(args, 2);
+      const store = createMemoryStore(dbPath);
+      console.log(buildMissionControlPageContent(store));
       store.close();
       return;
     }
