@@ -12,7 +12,9 @@ import { createMemoryStore } from "../src/memory/store.js";
 import { searchWorkspaceText } from "../src/repo-search.js";
 import { seedInitialMemory } from "../src/memory/seed.js";
 import {
+  buildWorkspaceDirtyMessage,
   classifyWorkspaceEntries,
+  getWorkspaceAudit,
   parseGitStatusPorcelain
 } from "../src/workspace.js";
 
@@ -127,6 +129,7 @@ test("project work cannot complete until required audits pass", () => {
     id: "governance-bootstrap",
     title: "Bootstrap governance",
     owner: "main-agent",
+    status: "in_progress",
     requiredReviewTypes: ["research", "code", "qa", "independent"]
   });
 
@@ -222,12 +225,94 @@ test("changes requested work blocks other work from starting", () => {
   store.close();
 });
 
+test("proposed work cannot be reviewed or completed until it is active", () => {
+  const store = createTempStore();
+  store.upsertProjectWorkItem({
+    id: "proposed-only",
+    title: "Proposed only",
+    owner: "main-agent",
+    requiredReviewTypes: ["research", "code", "qa", "independent"]
+  });
+
+  assert.throws(
+    () =>
+      store.recordProjectReview({
+        workItemId: "proposed-only",
+        reviewType: "research",
+        reviewer: "main-agent",
+        verdict: "pass",
+        notes: "Tried to review before starting."
+      }),
+    /move it to in_progress first/
+  );
+
+  assert.throws(
+    () => store.completeProjectWorkItem("proposed-only"),
+    /still proposed; move it to in_progress first/
+  );
+
+  store.close();
+});
+
+test("generic status updates cannot mark work done directly", () => {
+  const store = createTempStore();
+  store.upsertProjectWorkItem({
+    id: "status-done-bypass",
+    title: "Status done bypass",
+    owner: "main-agent",
+    status: "in_progress"
+  });
+
+  assert.throws(
+    () => store.updateProjectWorkStatus("status-done-bypass", "done"),
+    /cannot be marked done through the generic status path/
+  );
+
+  assert.equal(store.getProjectWorkItem("status-done-bypass").status, "in_progress");
+  store.close();
+});
+
+test("generic upsert cannot create or update work directly to done", () => {
+  const store = createTempStore();
+
+  assert.throws(
+    () =>
+      store.upsertProjectWorkItem({
+        id: "upsert-direct-done",
+        title: "Upsert direct done",
+        owner: "main-agent",
+        status: "done"
+      }),
+    /cannot be created or updated to done through the generic upsert path/
+  );
+
+  store.upsertProjectWorkItem({
+    id: "upsert-direct-done-existing",
+    title: "Upsert direct done existing",
+    owner: "main-agent",
+    status: "in_progress"
+  });
+
+  assert.throws(
+    () =>
+      store.upsertProjectWorkItem({
+        id: "upsert-direct-done-existing",
+        title: "Upsert direct done existing",
+        status: "done"
+      }),
+    /cannot be created or updated to done through the generic upsert path/
+  );
+
+  store.close();
+});
+
 test("failed review forces a fresh full review round before work can complete", () => {
   const store = createTempStore();
   store.upsertProjectWorkItem({
     id: "review-loop",
     title: "Recursive review work",
     owner: "main-agent",
+    status: "in_progress",
     requiredReviewTypes: ["research", "code", "qa", "independent"]
   });
 
@@ -313,6 +398,61 @@ test("failed review forces a fresh full review round before work can complete", 
 
   const completed = store.completeProjectWorkItem("review-loop");
   assert.equal(completed.status, "done");
+
+  store.close();
+});
+
+test("reopening done work starts a fresh review round and blocks stale approvals", () => {
+  const store = createTempStore();
+  store.upsertProjectWorkItem({
+    id: "done-reopen",
+    title: "Done reopen",
+    owner: "main-agent",
+    status: "in_progress",
+    requiredReviewTypes: ["research", "code", "qa", "independent"]
+  });
+  store.recordProjectReview({
+    workItemId: "done-reopen",
+    reviewType: "research",
+    reviewer: "main-agent",
+    verdict: "pass",
+    notes: "ok"
+  });
+  store.recordProjectReview({
+    workItemId: "done-reopen",
+    reviewType: "code",
+    reviewer: "main-agent",
+    verdict: "pass",
+    notes: "ok"
+  });
+  store.recordProjectReview({
+    workItemId: "done-reopen",
+    reviewType: "qa",
+    reviewer: "main-agent",
+    verdict: "pass",
+    notes: "ok"
+  });
+  const reviewer = registerSubagentReviewer(
+    store,
+    "12121212-1212-7212-8212-121212121212",
+    "Rounder"
+  );
+  store.recordProjectReview({
+    workItemId: "done-reopen",
+    reviewType: "independent",
+    reviewer: reviewer.reviewer_key,
+    verdict: "pass",
+    notes: "ok"
+  });
+
+  store.completeProjectWorkItem("done-reopen");
+  const reopened = store.updateProjectWorkStatus("done-reopen", "in_progress");
+  assert.equal(reopened.reviewRound, 2);
+
+  assert.throws(
+    () => store.completeProjectWorkItem("done-reopen"),
+    /missing reviews: research, code, qa, independent/
+  );
 
   store.close();
 });
@@ -535,6 +675,7 @@ test("upserting an in-progress work item after changes requested starts a fresh 
     id: "upsert-reopen",
     title: "Upsert reopen",
     owner: "main-agent",
+    status: "in_progress",
     requiredReviewTypes: ["research", "code", "qa", "independent"]
   });
   store.recordProjectReview({
@@ -561,6 +702,7 @@ test("upserting an existing failed item with default status does not clear chang
     id: "upsert-preserve-fail",
     title: "Upsert preserve fail",
     owner: "main-agent",
+    status: "in_progress",
     requiredReviewTypes: ["research", "code", "qa", "independent"]
   });
   store.recordProjectReview({
@@ -608,6 +750,7 @@ test("independent review requires a registered active reviewer identity", () => 
     id: "identity-check",
     title: "Identity check",
     owner: "main-agent",
+    status: "in_progress",
     requiredReviewTypes: ["research", "code", "qa", "independent"]
   });
 
@@ -673,7 +816,7 @@ test("legacy reviewer labels are preserved as legacy identities during migration
     owner: "main-agent",
     requiredReviewTypes: ["research", "code", "qa", "independent"],
     status: "done"
-  });
+  }, { allowDoneTransition: true });
   const createdAt = new Date().toISOString();
   store.db.prepare(
     `INSERT INTO project_reviews
@@ -714,7 +857,7 @@ test("historical uuid reviewer keys are backfilled as legacy identities", () => 
     owner: "main-agent",
     requiredReviewTypes: ["research", "code", "qa", "independent"],
     status: "done"
-  });
+  }, { allowDoneTransition: true });
   const createdAt = new Date().toISOString();
   store.db.prepare(
     `INSERT INTO project_reviews
@@ -977,12 +1120,12 @@ test("mission control brief reflects current repo state and memory hygiene", () 
     id: "github-flow-automation",
     title: "GitHub flow automation",
     status: "done"
-  });
+  }, { allowDoneTransition: true });
   store.upsertProjectWorkItem({
     id: "reviewer-identity-hardening",
     title: "Reviewer traceability",
     status: "done"
-  });
+  }, { allowDoneTransition: true });
   store.recordOperatorFailure({
     title: "Reported work as settled before remote landing",
     details:
@@ -1094,6 +1237,7 @@ test("work complete via cli refuses a dirty workspace", () => {
     id: "cli-complete",
     title: "CLI complete",
     owner: "main-agent",
+    status: "in_progress",
     requiredReviewTypes: ["research", "code", "qa", "independent"]
   });
   store.recordProjectReview({
@@ -1141,4 +1285,69 @@ test("work complete via cli refuses a dirty workspace", () => {
       }),
     /Workspace is dirty/
   );
+});
+
+test("work status via cli refuses to start dirty work before changing state", () => {
+  const repoDir = initTempRepo();
+  writeFileSync(join(repoDir, "untracked.txt"), "dirty\n");
+
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-start-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "cli-start",
+    title: "CLI start"
+  });
+  store.close();
+
+  const cliPath = join(process.cwd(), "src", "cli.js");
+
+  assert.throws(
+    () =>
+      execFileSync("node", [cliPath, "work", "status", "cli-start", "in_progress", dbPath], {
+        cwd: repoDir,
+        stdio: "pipe"
+      }),
+    /Workspace is dirty/
+  );
+
+  const reopened = createMemoryStore(dbPath);
+  assert.equal(reopened.getProjectWorkItem("cli-start").status, "proposed");
+  reopened.close();
+});
+
+test("workspace audit fails closed when git state is unavailable", () => {
+  const nonRepoDir = mkdtempSync(join(tmpdir(), "world-non-repo-"));
+  const audit = getWorkspaceAudit(nonRepoDir);
+
+  assert.equal(audit.available, false);
+  assert.equal(audit.clean, false);
+  assert.match(buildWorkspaceDirtyMessage(audit), /could not be verified/i);
+});
+
+test("work status via cli refuses to start when workspace state cannot be verified", () => {
+  const nonRepoDir = mkdtempSync(join(tmpdir(), "world-no-git-start-"));
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-no-git-start-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  store.upsertProjectWorkItem({
+    id: "cli-start-no-git",
+    title: "CLI start no git"
+  });
+  store.close();
+
+  const cliPath = join(process.cwd(), "src", "cli.js");
+
+  assert.throws(
+    () =>
+      execFileSync("node", [cliPath, "work", "status", "cli-start-no-git", "in_progress", dbPath], {
+        cwd: nonRepoDir,
+        stdio: "pipe"
+      }),
+    /Workspace state could not be verified/
+  );
+
+  const reopened = createMemoryStore(dbPath);
+  assert.equal(reopened.getProjectWorkItem("cli-start-no-git").status, "proposed");
+  reopened.close();
 });

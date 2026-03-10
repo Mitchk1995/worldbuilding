@@ -1,17 +1,25 @@
 import { execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { delimiter, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const DEFAULT_STATUS_CHECKS = ["review-record", "verify"];
+const GITHUB_ACTIONS_APP_ID = 15368;
 let cachedGhPath = null;
 
 // GitHub UI approvals are not our real second-review signal here.
 // The required independent review lives in the tracked review ledger,
 // and the Quality Gate enforces that ledger on every pull request.
-const DESIRED_MAIN_BRANCH_PROTECTION = {
+const DESIRED_REQUIRED_CHECKS = DEFAULT_STATUS_CHECKS.map((context) => ({
+  context,
+  app_id: GITHUB_ACTIONS_APP_ID
+})).sort((left, right) => left.context.localeCompare(right.context));
+
+export const DESIRED_MAIN_BRANCH_PROTECTION = {
   required_status_checks: {
     strict: true,
-    contexts: DEFAULT_STATUS_CHECKS
+    contexts: [...DEFAULT_STATUS_CHECKS].sort(),
+    checks: DESIRED_REQUIRED_CHECKS
   },
   enforce_admins: true,
   required_pull_request_reviews: {
@@ -28,6 +36,10 @@ const DESIRED_MAIN_BRANCH_PROTECTION = {
   required_conversation_resolution: true,
   lock_branch: false,
   allow_fork_syncing: false
+};
+
+export const DESIRED_REPO_SETTINGS = {
+  delete_branch_on_merge: true
 };
 
 function runGhJson(args) {
@@ -96,11 +108,26 @@ function getCurrentRepo() {
   };
 }
 
-function normalizeProtection(response) {
+function sortChecks(checks) {
+  return checks
+    .map((check) => ({
+      context: check.context,
+      app_id: check.app_id ?? null
+    }))
+    .sort((left, right) => left.context.localeCompare(right.context));
+}
+
+export function normalizeProtection(response) {
+  const contexts = [...(response.required_status_checks?.contexts ?? [])].sort();
+  const checks =
+    response.required_status_checks?.checks?.length > 0
+      ? sortChecks(response.required_status_checks.checks)
+      : sortChecks(contexts.map((context) => ({ context, app_id: null })));
   return {
     required_status_checks: {
       strict: Boolean(response.required_status_checks?.strict),
-      contexts: [...(response.required_status_checks?.contexts ?? [])].sort()
+      contexts,
+      checks
     },
     enforce_admins: Boolean(response.enforce_admins?.enabled),
     required_pull_request_reviews: response.required_pull_request_reviews
@@ -131,14 +158,20 @@ function normalizeProtection(response) {
   };
 }
 
-function compareProtection(current, desired) {
+export function normalizeRepoSettings(response) {
+  return {
+    delete_branch_on_merge: Boolean(response.delete_branch_on_merge)
+  };
+}
+
+export function compareStateSection(sectionName, current, desired) {
   const mismatches = [];
   for (const key of Object.keys(desired)) {
     const left = JSON.stringify(current[key] ?? null);
     const right = JSON.stringify(desired[key] ?? null);
     if (left !== right) {
       mismatches.push({
-        field: key,
+        field: `${sectionName}.${key}`,
         current: current[key] ?? null,
         desired: desired[key] ?? null
       });
@@ -155,21 +188,46 @@ function getProtection(repo, branch) {
   return normalizeProtection(raw);
 }
 
+function getRepoSettings(repo) {
+  const raw = runGhJson([
+    "api",
+    `repos/${repo}`
+  ]);
+  return normalizeRepoSettings(raw);
+}
+
 function auditProtection(repo, branch) {
   try {
     const current = getProtection(repo, branch);
-    const mismatches = compareProtection(
-      current,
-      DESIRED_MAIN_BRANCH_PROTECTION
-    );
+    const currentRepoSettings = getRepoSettings(repo);
+    const mismatches = [
+      ...compareStateSection(
+        "branch_protection",
+        current,
+        DESIRED_MAIN_BRANCH_PROTECTION
+      ),
+      ...compareStateSection(
+        "repo_settings",
+        currentRepoSettings,
+        DESIRED_REPO_SETTINGS
+      )
+    ];
+    const currentState = {
+      ...current,
+      repo_settings: currentRepoSettings
+    };
+    const desiredState = {
+      ...DESIRED_MAIN_BRANCH_PROTECTION,
+      repo_settings: DESIRED_REPO_SETTINGS
+    };
     return {
       repo,
       branch,
       protected: true,
       matches: mismatches.length === 0,
       mismatches,
-      current,
-      desired: DESIRED_MAIN_BRANCH_PROTECTION
+      current: currentState,
+      desired: desiredState
     };
   } catch (error) {
     const message = String(error.message ?? error);
@@ -187,7 +245,10 @@ function auditProtection(repo, branch) {
           }
         ],
         current: null,
-        desired: DESIRED_MAIN_BRANCH_PROTECTION
+        desired: {
+          ...DESIRED_MAIN_BRANCH_PROTECTION,
+          repo_settings: DESIRED_REPO_SETTINGS
+        }
       };
     }
     throw error;
@@ -195,7 +256,13 @@ function auditProtection(repo, branch) {
 }
 
 function putProtection(repo, branch) {
-  const payload = JSON.stringify(DESIRED_MAIN_BRANCH_PROTECTION);
+  const payload = JSON.stringify({
+    ...DESIRED_MAIN_BRANCH_PROTECTION,
+    required_status_checks: {
+      strict: DESIRED_MAIN_BRANCH_PROTECTION.required_status_checks.strict,
+      checks: DESIRED_MAIN_BRANCH_PROTECTION.required_status_checks.checks
+    }
+  });
   execFileSync(
     resolveGhPath(),
     [
@@ -205,6 +272,27 @@ function putProtection(repo, branch) {
       "-H",
       "Accept: application/vnd.github+json",
       `repos/${repo}/branches/${branch}/protection`,
+      "--input",
+      "-"
+    ],
+    {
+      input: payload,
+      stdio: "pipe"
+    }
+  );
+}
+
+function patchRepoSettings(repo) {
+  const payload = JSON.stringify(DESIRED_REPO_SETTINGS);
+  execFileSync(
+    resolveGhPath(),
+    [
+      "api",
+      "--method",
+      "PATCH",
+      "-H",
+      "Accept: application/vnd.github+json",
+      `repos/${repo}`,
       "--input",
       "-"
     ],
@@ -238,8 +326,11 @@ function main() {
     return;
   }
 
+  patchRepoSettings(repo);
   putProtection(repo, branch);
   console.log(JSON.stringify(auditProtection(repo, branch), null, 2));
 }
 
-main();
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  main();
+}

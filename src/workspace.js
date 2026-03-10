@@ -65,14 +65,23 @@ export function getWorkspaceAudit(cwd = process.cwd()) {
   } catch (error) {
     return {
       available: false,
-      clean: true,
+      root: null,
+      clean: false,
+      entryCount: 0,
+      generatedReviewArtifacts: [],
+      meaningfulChanges: [],
+      entries: [],
       reason: String(error.message ?? error)
     };
   }
 }
 
 export function buildWorkspaceDirtyMessage(audit) {
-  if (!audit.available || audit.clean) {
+  if (!audit.available) {
+    return `Workspace state could not be verified: ${audit.reason ?? "unknown error"}. Run \`node src/cli.js workspace audit\` and fix the environment before starting or completing work.`;
+  }
+
+  if (audit.clean) {
     return null;
   }
 
@@ -100,6 +109,6 @@ export function buildWorkspaceDirtyMessage(audit) {
     parts.push(`Generated review artifacts: ${artifactPreview.join(", ")}`);
   }
 
-  parts.push("Run `node src/cli.js workspace audit` and commit or clean before calling work complete.");
+  parts.push("Run `node src/cli.js workspace audit` and commit or clean before starting or completing work.");
   return parts.join(". ");
 }

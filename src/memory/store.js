@@ -84,6 +84,13 @@ function jaccardSimilarity(left, right) {
 
 const OPERATOR_RECORD_STATUSES = new Set(["open", "resolved"]);
 const REVIEWER_IDENTITY_STATUSES = new Set(["active", "legacy", "revoked"]);
+const PROJECT_WORK_STATUSES = new Set([
+  "proposed",
+  "in_progress",
+  "changes_requested",
+  "done",
+  "cancelled"
+]);
 const SUBAGENT_AGENT_ID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -101,6 +108,26 @@ function assertReviewerIdentityStatus(status) {
       `Unsupported reviewer identity status: ${status}. Allowed statuses: active, legacy, revoked.`
     );
   }
+}
+
+function assertProjectWorkStatus(status) {
+  if (!PROJECT_WORK_STATUSES.has(status)) {
+    throw new Error(
+      `Unsupported project work status: ${status}. Allowed statuses: proposed, in_progress, changes_requested, done, cancelled.`
+    );
+  }
+}
+
+function shouldStartFreshReviewRound(previousStatus, nextStatus) {
+  if (nextStatus !== "in_progress") {
+    return false;
+  }
+
+  return (
+    previousStatus === "changes_requested" ||
+    previousStatus === "done" ||
+    previousStatus === "cancelled"
+  );
 }
 
 function reviewerKeyFromAgentId(agentId) {
@@ -388,12 +415,18 @@ export class MemoryStore {
     riskLevel = "normal",
     requiredReviewTypes = ["research", "code", "qa", "independent"],
     acceptance = []
-  }) {
+  }, { allowDoneTransition = false } = {}) {
+    assertProjectWorkStatus(status);
     const existing = this.getProjectWorkItem(id);
+    if (status === "done" && (!existing || existing.status !== "done") && !allowDoneTransition) {
+      throw new Error(
+        `Work item ${id} cannot be created or updated to done through the generic upsert path; use the guarded completion flow instead`
+      );
+    }
     const effectiveStatus =
       existing && status === "proposed" ? existing.status : status;
     const reviewRound =
-      existing && existing.status === "changes_requested" && effectiveStatus === "in_progress"
+      existing && shouldStartFreshReviewRound(existing.status, effectiveStatus)
         ? existing.reviewRound + 1
         : existing?.reviewRound ?? 1;
     const timestamp = nowIso();
@@ -431,10 +464,21 @@ export class MemoryStore {
     return this.getProjectWorkItem(id);
   }
 
-  updateProjectWorkStatus(id, status) {
+  updateProjectWorkStatus(id, status, { allowDoneTransition = false } = {}) {
+    assertProjectWorkStatus(status);
     const current = this.getProjectWorkItem(id);
     if (!current) {
       throw new Error(`Unknown work item: ${id}`);
+    }
+    if (status === "proposed" && current.status !== "proposed") {
+      throw new Error(
+        `Work item ${id} cannot move back to proposed after work has started`
+      );
+    }
+    if (status === "done" && !allowDoneTransition) {
+      throw new Error(
+        `Work item ${id} cannot be marked done through the generic status path; use the guarded completion flow instead`
+      );
     }
     if (status === "in_progress") {
       const blocking = this.db.prepare(
@@ -451,7 +495,7 @@ export class MemoryStore {
 
     const timestamp = nowIso();
     const nextRound =
-      status === "in_progress" && current.status === "changes_requested"
+      shouldStartFreshReviewRound(current.status, status)
         ? current.reviewRound + 1
         : current.reviewRound;
     const result = this.db.prepare(
@@ -529,6 +573,16 @@ export class MemoryStore {
     let reviewerIdentity = null;
     if (!workItem) {
       throw new Error(`Unknown work item: ${workItemId}`);
+    }
+    if (workItem.status === "proposed") {
+      throw new Error(
+        `Cannot record review for ${workItemId} while it is proposed; move it to in_progress first`
+      );
+    }
+    if (workItem.status === "done" || workItem.status === "cancelled") {
+      throw new Error(
+        `Cannot record review for ${workItemId} while it is ${workItem.status}`
+      );
     }
     if (reviewType === "independent" && reviewer === workItem.owner) {
       throw new Error(
@@ -614,6 +668,16 @@ export class MemoryStore {
     if (!workItem) {
       throw new Error(`Unknown work item: ${id}`);
     }
+    if (workItem.status === "proposed") {
+      throw new Error(
+        `Work item ${id} cannot be completed while it is still proposed; move it to in_progress first`
+      );
+    }
+    if (workItem.status !== "in_progress" && workItem.status !== "changes_requested") {
+      throw new Error(
+        `Work item ${id} cannot be completed from status ${workItem.status}`
+      );
+    }
     if (workItem.status === "changes_requested") {
       throw new Error(
         `Work item ${id} cannot be completed while it is still marked changes_requested`
@@ -652,7 +716,7 @@ export class MemoryStore {
       throw new Error(`Work item ${id} cannot be completed; ${parts.join("; ")}`);
     }
 
-    return this.updateProjectWorkStatus(id, "done");
+    return this.updateProjectWorkStatus(id, "done", { allowDoneTransition: true });
   }
 
   upsertWorldEntity({
@@ -840,7 +904,10 @@ export class MemoryStore {
       `SELECT title, details, created_at, updated_at
        FROM operator_failures
        WHERE status = 'open'
-       ORDER BY updated_at DESC, created_at DESC
+       ORDER BY
+         updated_at DESC,
+         CASE WHEN updated_at != created_at THEN 1 ELSE 0 END DESC,
+         created_at DESC
        LIMIT ?`
     ).all(limit);
     const workItems = this.db.prepare(

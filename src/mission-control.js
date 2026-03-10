@@ -115,6 +115,30 @@ function findOpenSteering(store, kind) {
   return store.listOperatorSteerings("open").find((item) => item.kind === kind);
 }
 
+function summarizeWorkspaceState(workspaceAudit) {
+  if (!workspaceAudit.available) {
+    return "The local workspace state could not be verified.";
+  }
+
+  if (workspaceAudit.clean) {
+    return "The local workspace is clean.";
+  }
+
+  return `The local workspace is not clean yet (${workspaceAudit.meaningfulChanges.length} meaningful change(s)).`;
+}
+
+function summarizeWorkspaceCard(workspaceAudit) {
+  if (!workspaceAudit.available) {
+    return "Workspace state could not be verified.";
+  }
+
+  if (workspaceAudit.clean) {
+    return "Workspace is clean.";
+  }
+
+  return `${workspaceAudit.meaningfulChanges.length} meaningful change(s) are still local.`;
+}
+
 export function buildMissionControlBrief(store, { cwd = process.cwd() } = {}) {
   const openWork = store
     .listProjectWorkItems()
@@ -152,13 +176,7 @@ export function buildMissionControlBrief(store, { cwd = process.cwd() } = {}) {
     );
   }
 
-  if (workspaceAudit.clean) {
-    matterLines.push("- The local workspace is clean.");
-  } else {
-    matterLines.push(
-      `- The local workspace is not clean yet (${workspaceAudit.meaningfulChanges.length} meaningful change(s)).`
-    );
-  }
+  matterLines.push(`- ${summarizeWorkspaceState(workspaceAudit).replace(/\.$/, "")}.`);
 
   if (landingState.status === "in_sync") {
     if (landingState.onMain) {
@@ -331,9 +349,7 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
     lines: [
       summarizeWorkCard(openWork.length),
       summarizeLandingCard(landingState),
-      workspaceAudit.clean
-        ? "Workspace is clean."
-        : `${workspaceAudit.meaningfulChanges.length} meaningful change(s) are still local.`
+      summarizeWorkspaceCard(workspaceAudit)
     ]
   });
 

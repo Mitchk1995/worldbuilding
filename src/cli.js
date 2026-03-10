@@ -305,17 +305,17 @@ function main() {
       if (!id || !status) {
         throw new Error("Work status requires <id> <status>.");
       }
-      const store = createMemoryStore(dbPath);
-      const updated = store.updateProjectWorkStatus(id, status);
-      console.log(JSON.stringify(updated, null, 2));
-      store.close();
       if (status === "in_progress") {
         const audit = getWorkspaceAudit();
         const warning = buildWorkspaceDirtyMessage(audit);
         if (warning) {
-          console.error(`Workspace warning while starting work: ${warning}`);
+          throw new Error(warning);
         }
       }
+      const store = createMemoryStore(dbPath);
+      const updated = store.updateProjectWorkStatus(id, status);
+      console.log(JSON.stringify(updated, null, 2));
+      store.close();
       return;
     }
 
