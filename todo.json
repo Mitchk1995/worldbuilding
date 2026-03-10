@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "direction": {
+    "current_focus": "Keep operator continuity exact and clean while rebuilding the world system around canon, simulation, and embodiment.",
+    "why_now": "The old stack became bloated because memory, planning, and world state were all mixed together.",
+    "last_changed": "2026-03-10"
+  },
+  "limits": {
+    "max_now": 3,
+    "max_total_items": 9,
+    "max_done_items": 3,
+    "max_dropped_items": 3,
+    "max_text_chars": 220
+  },
+  "delivery": {
+    "one_pr_per_item": true,
+    "max_active_pr_items": 1,
+    "rule": "A PR should close one todo item id or one clearly coupled pair. If work spills into a different goal, split it."
+  },
+  "items": [
+    {
+      "id": "memory-exactness",
+      "status": "now",
+      "title": "Finish exact Hermes operator memory adoption and remove any remaining fake memory sources.",
+      "why": "Operator continuity has to be exact and singular before anything else can be trusted.",
+      "done_when": "The vendored Hermes memory module is the only operator memory implementation and the tests stay clean.",
+      "review_state": "needs_review",
+      "changed_on": "2026-03-10"
+    },
+    {
+      "id": "todo-board",
+      "status": "now",
+      "title": "Keep one simple todo board that can survive direction changes without getting garbled.",
+      "why": "Planning drift is how the repo becomes sloppy again.",
+      "done_when": "There is one validated board with clear now, next, and later work and a second-agent review can judge it cleanly.",
+      "review_state": "needs_review",
+      "changed_on": "2026-03-10"
+    },
+    {
+      "id": "canon-engine",
+      "status": "next",
+      "title": "Design the canon engine so world truth stays separate from operator memory and runtime beliefs.",
+      "why": "World continuity is still unsolved until canon has its own home.",
+      "done_when": "Canon facts, approvals, and runtime beliefs have separate boundaries.",
+      "review_state": "draft",
+      "changed_on": "2026-03-10"
+    },
+    {
+      "id": "simulation-runtime",
+      "status": "later",
+      "title": "Build the simulation runtime that reads canon without overwriting it.",
+      "why": "The living world should emerge from canon instead of replacing it.",
+      "done_when": "Runtime state can evolve scene by scene while canon stays authoritative.",
+      "review_state": "draft",
+      "changed_on": "2026-03-10"
+    },
+    {
+      "id": "embodiment-layer",
+      "status": "later",
+      "title": "Build the player-facing layer for entering the living world.",
+      "why": "The user insertion layer only makes sense after canon and simulation are stable.",
+      "done_when": "The system can place the user into a persistent scene without confusing builder state with world state.",
+      "review_state": "draft",
+      "changed_on": "2026-03-10"
+    }
+  ]
+}

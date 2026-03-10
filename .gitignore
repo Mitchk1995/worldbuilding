@@ -2,3 +2,5 @@ data/
 node_modules/
 coverage/
 .playwright-cli/
+__pycache__/
+*.pyc
