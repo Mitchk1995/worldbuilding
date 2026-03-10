@@ -1,6 +1,79 @@
 {
-  "generatedAt": "2026-03-09T23:58:55.522Z",
+  "generatedAt": "2026-03-10T00:26:28.936Z",
   "workItems": [
+    {
+      "id": "notion-sync-hardening",
+      "title": "Improve mission-control truthfulness, sync flow, and readability",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "in_progress",
+      "riskLevel": "normal",
+      "reviewRound": 2,
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd51e-a587-7391-978b-8481734b6daa",
+          "reviewerDisplayName": "Russell",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "fail",
+          "notes": "Independent review found a core truthfulness bug in the mission-control brief: it reported main-branch sync from the currently checked-out branch state instead of actually inspecting main. It also flagged one stale branch-specific line in the handoff notes.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T00:22:42.956Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Used the live Notion page, current Notion markdown spec, current repo state, and current GitHub landing state for this pass. The work stayed grounded in live state instead of relying on stale local wording.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T00:26:00.792Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "Added a mission-control brief command that summarizes live repo state, tightened its branch-truthfulness after an independent review catch, and updated the handoff notes so future refreshes use the generated summary instead of hand-written drift.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T00:26:06.874Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "verdict": "pass",
+          "notes": "QA passed with the full test suite, live mission-control brief spot checks, live Notion page refresh, and creation of the missing steering and open-problem records needed to bring the dashboard back in sync.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T00:26:11.498Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd51e-a587-7391-978b-8481734b6daa",
+          "reviewerDisplayName": "Russell",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "verdict": "pass",
+          "notes": "Independent re-review passed after the truthfulness fix. The reviewer confirmed the mission-control brief now checks main against origin/main directly, the stale handoff wording is fixed, and the remaining fallback is a safe unknown state rather than a misleading claim.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T00:26:17.495Z"
+        }
+      ]
+    },
     {
       "id": "memory-env-hardening",
       "title": "Fix repo environment friction and harden operator memory workflow",
