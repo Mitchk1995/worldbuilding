@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-10T05:13:48.896Z",
+  "generatedAt": "2026-03-10T05:18:56.188Z",
   "workItems": [
     {
       "id": "legacy-review-record-recovery",
@@ -8,8 +8,8 @@
       "owner": "main-agent",
       "status": "done",
       "riskLevel": "normal",
-      "reviewRound": 2,
-      "reviewedHeadSha": "3aab29d1c310cbae497459438978b63b6d341495",
+      "reviewRound": 3,
+      "reviewedHeadSha": "74e4df530624c2c623b15301e8679e392cb2f8fc",
       "requiredReviewTypes": [
         "research",
         "code",
@@ -113,6 +113,54 @@
           "notes": "Ptolemy independently reviewed head 3aab29d1c310cbae497459438978b63b6d341495 and found no remaining issues in the cutover scope. The import fix keeps the trusted workflow on the read-only core module, deleting the legacy workflow does not create a merge-policy gap because main already requires only review-record-trusted and verify, and the post-review allowance remains narrowly limited to governance/review-ledger.json.",
           "reviewRound": 2,
           "createdAt": "2026-03-10T05:12:58.378Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "74e4df530624c2c623b15301e8679e392cb2f8fc",
+          "verdict": "pass",
+          "notes": "No new March 2026 policy claim changed in this follow-up round. This round only repairs the local trusted-evidence publish path so the already-chosen trusted-check design can actually post its review evidence without crashing.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-10T05:17:51.277Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "74e4df530624c2c623b15301e8679e392cb2f8fc",
+          "verdict": "pass",
+          "notes": "Restored the latestReviewsByType helper inside src/pr-review-evidence.js so buildReviewEvidencePayload can assemble trusted review evidence again after the core split. Added a store-backed test that exercises the exact payload-building path that failed during live publication.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-10T05:17:57.131Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "74e4df530624c2c623b15301e8679e392cb2f8fc",
+          "verdict": "pass",
+          "notes": "From clean head 74e4df530624c2c623b15301e8679e392cb2f8fc, npm test passed with the new publish-path regression test included, and node --test test/pr-review-evidence.test.js also passed cleanly.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-10T05:18:03.379Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd626-761c-7a61-b3d3-90f6e9e520f6",
+          "reviewerDisplayName": "Ptolemy",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "reviewedHeadSha": "74e4df530624c2c623b15301e8679e392cb2f8fc",
+          "verdict": "pass",
+          "notes": "Ptolemy independently reviewed head 74e4df530624c2c623b15301e8679e392cb2f8fc and found no issues in the follow-up publish-path fix. The helper restoration closes the crash in buildReviewEvidencePayload, the new store-backed test exercises the broken path, and node --test test/pr-review-evidence.test.js passed cleanly in independent verification.",
+          "reviewRound": 3,
+          "createdAt": "2026-03-10T05:18:08.467Z"
         }
       ]
     },
