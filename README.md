@@ -11,5 +11,6 @@ What remains:
 
 Direction changes now belong in the todo board instead of getting lost in chat.
 The board is validated with `npm run check:todo` before normal work.
+On work branches, the active todo item ids must be declared in the board and reflected in the branch name.
 
 Everything else is expected to be rebuilt deliberately.
