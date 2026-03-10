@@ -1,6 +1,73 @@
 {
-  "generatedAt": "2026-03-10T04:52:55.325Z",
+  "generatedAt": "2026-03-10T04:57:26.592Z",
   "workItems": [
+    {
+      "id": "legacy-review-record-recovery",
+      "title": "Recover from broken main review-record gate and cut over to the trusted review-record check",
+      "lane": "operator",
+      "owner": "main-agent",
+      "status": "done",
+      "riskLevel": "normal",
+      "reviewRound": 1,
+      "reviewedHeadSha": "845abbfd257cc9779621b2131a594aa36801af1d",
+      "requiredReviewTypes": [
+        "research",
+        "code",
+        "qa",
+        "independent"
+      ],
+      "acceptance": [],
+      "reviews": [
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "845abbfd257cc9779621b2131a594aa36801af1d",
+          "verdict": "pass",
+          "notes": "Confirmed with current GitHub policy audit that live main now requires review-record-trusted and verify from the GitHub Actions app. This recovery branch simply aligns the repo-tracked desired policy with that already-restored live trusted-check state.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:56:42.399Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "845abbfd257cc9779621b2131a594aa36801af1d",
+          "verdict": "pass",
+          "notes": "Reviewed the recovery diff. src/github-policy.js now tracks review-record-trusted instead of review-record, and the github-policy tests were updated to assert the trusted check name so future audits do not drift back toward the broken legacy gate.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:56:46.774Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "845abbfd257cc9779621b2131a594aa36801af1d",
+          "verdict": "pass",
+          "notes": "From clean head 845abbfd257cc9779621b2131a594aa36801af1d, npm test passed and npm run github:policy:audit reported matches true for main with required checks review-record-trusted and verify.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:56:51.676Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd60b-43c8-76c3-b000-756a9038a3e2",
+          "reviewerDisplayName": "Kepler",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "reviewedHeadSha": "845abbfd257cc9779621b2131a594aa36801af1d",
+          "verdict": "pass",
+          "notes": "Kepler independently reviewed head 845abbfd257cc9779621b2131a594aa36801af1d and found no issues. The change cleanly renames the tracked required check to review-record-trusted, the test expectations match, and the live policy audit currently matches the repo-tracked desired state exactly.",
+          "reviewRound": 1,
+          "createdAt": "2026-03-10T04:57:15.945Z"
+        }
+      ]
+    },
     {
       "id": "trusted-review-record-bootstrap",
       "title": "Add a trusted PR review-record workflow alongside the legacy gate",
