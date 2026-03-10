@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-03-10T01:07:08.446Z",
+  "generatedAt": "2026-03-10T01:08:01.826Z",
   "workItems": [
     {
       "id": "dashboard-landing-truthfulness",
       "title": "Surface unlanded branch work in mission control",
       "lane": "operator",
       "owner": "main-agent",
-      "status": "in_progress",
+      "status": "done",
       "riskLevel": "normal",
       "reviewRound": 1,
       "requiredReviewTypes": [
