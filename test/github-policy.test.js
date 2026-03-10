@@ -12,9 +12,9 @@ test("normalizeProtection preserves required check app bindings", () => {
   const normalized = normalizeProtection({
     required_status_checks: {
       strict: true,
-      contexts: ["review-record", "verify"],
+      contexts: ["review-record-trusted", "verify"],
       checks: [
-        { context: "review-record", app_id: null },
+        { context: "review-record-trusted", app_id: null },
         { context: "verify", app_id: 15368 }
       ]
     },
@@ -35,7 +35,7 @@ test("normalizeProtection preserves required check app bindings", () => {
   });
 
   assert.deepEqual(normalized.required_status_checks.checks, [
-    { context: "review-record", app_id: null },
+    { context: "review-record-trusted", app_id: null },
     { context: "verify", app_id: 15368 }
   ]);
 });
@@ -46,7 +46,7 @@ test("compareStateSection flags untrusted required check sources", () => {
     required_status_checks: {
       ...DESIRED_MAIN_BRANCH_PROTECTION.required_status_checks,
       checks: [
-        { context: "review-record", app_id: null },
+        { context: "review-record-trusted", app_id: null },
         { context: "verify", app_id: 15368 }
       ]
     }

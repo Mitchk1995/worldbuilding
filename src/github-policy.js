@@ -3,7 +3,7 @@ import { existsSync } from "node:fs";
 import { delimiter, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const DEFAULT_STATUS_CHECKS = ["review-record", "verify"];
+const DEFAULT_STATUS_CHECKS = ["review-record-trusted", "verify"];
 const GITHUB_ACTIONS_APP_ID = 15368;
 let cachedGhPath = null;
 
