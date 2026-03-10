@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-10T04:57:26.592Z",
+  "generatedAt": "2026-03-10T05:13:48.896Z",
   "workItems": [
     {
       "id": "legacy-review-record-recovery",
@@ -8,8 +8,8 @@
       "owner": "main-agent",
       "status": "done",
       "riskLevel": "normal",
-      "reviewRound": 1,
-      "reviewedHeadSha": "845abbfd257cc9779621b2131a594aa36801af1d",
+      "reviewRound": 2,
+      "reviewedHeadSha": "3aab29d1c310cbae497459438978b63b6d341495",
       "requiredReviewTypes": [
         "research",
         "code",
@@ -65,6 +65,54 @@
           "notes": "Kepler independently reviewed head 845abbfd257cc9779621b2131a594aa36801af1d and found no issues. The change cleanly renames the tracked required check to review-record-trusted, the test expectations match, and the live policy audit currently matches the repo-tracked desired state exactly.",
           "reviewRound": 1,
           "createdAt": "2026-03-10T04:57:15.945Z"
+        },
+        {
+          "reviewType": "research",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "3aab29d1c310cbae497459438978b63b6d341495",
+          "verdict": "pass",
+          "notes": "Checked current March 2026 GitHub guidance through the research subagent and live policy audit. The recovery now matches the recommended model: one required trusted check from the GitHub Actions app, no PR-head execution in the privileged workflow, and no continued dependence on the legacy branch-authored gate.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T05:12:44.080Z"
+        },
+        {
+          "reviewType": "code",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "3aab29d1c310cbae497459438978b63b6d341495",
+          "verdict": "pass",
+          "notes": "Completed the trusted cutover on the recovery branch. The trusted workflow now imports only the read-only review-evidence core helpers, computes changed paths from the reviewed head to the current PR head, allows only the narrow ledger-sync follow-up, and the obsolete legacy PR-governance workflow was removed so the repo no longer carries two competing governance gates.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T05:12:48.764Z"
+        },
+        {
+          "reviewType": "qa",
+          "reviewer": "main-agent",
+          "reviewerDisplayName": null,
+          "reviewerIdentityStatus": null,
+          "reviewerRegistered": false,
+          "reviewedHeadSha": "3aab29d1c310cbae497459438978b63b6d341495",
+          "verdict": "pass",
+          "notes": "From clean head 3aab29d1c310cbae497459438978b63b6d341495, npm test passed and npm run github:policy:audit still reports matches true for main with required checks review-record-trusted and verify from the GitHub Actions app.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T05:12:53.073Z"
+        },
+        {
+          "reviewType": "independent",
+          "reviewer": "subagent:019cd626-761c-7a61-b3d3-90f6e9e520f6",
+          "reviewerDisplayName": "Ptolemy",
+          "reviewerIdentityStatus": "active",
+          "reviewerRegistered": true,
+          "reviewedHeadSha": "3aab29d1c310cbae497459438978b63b6d341495",
+          "verdict": "pass",
+          "notes": "Ptolemy independently reviewed head 3aab29d1c310cbae497459438978b63b6d341495 and found no remaining issues in the cutover scope. The import fix keeps the trusted workflow on the read-only core module, deleting the legacy workflow does not create a merge-policy gap because main already requires only review-record-trusted and verify, and the post-review allowance remains narrowly limited to governance/review-ledger.json.",
+          "reviewRound": 2,
+          "createdAt": "2026-03-10T05:12:58.378Z"
         }
       ]
     },
