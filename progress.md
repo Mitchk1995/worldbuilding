@@ -12,6 +12,7 @@ What remains on purpose:
 - one structured todo board
 - project context loading
 - a clean world-system blueprint
+- slice-by-slice handoff through `todo.json` and this progress file instead of one bloated chat
 
 ## Why this reset happened
 
@@ -22,7 +23,7 @@ The previous system was wrong-shaped. It mixed operator memory, governance, revi
 1. Keep operator continuity stable with small curated memory only.
    Use the vendored Hermes memory implementation as the single source of truth.
 2. Keep the todo board simple, validated, and reviewable so direction changes stay clean.
-   The board must pass `npm run check:todo` before normal work.
+   The board must pass `npm run check:todo` before normal work and support clean handoff into a fresh chat.
 3. Design a canon engine that is separate from operator memory.
 4. Add a world simulation runtime that is explicitly ephemeral.
 5. Build the user insertion layer only after canon and simulation are clean.

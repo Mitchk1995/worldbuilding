@@ -9,8 +9,8 @@ What remains:
 - project context loading
 - a first-principles redesign document
 
-Direction changes now belong in the todo board instead of getting lost in chat.
+Direction changes now belong in the todo board and progress record instead of getting lost in one long chat.
+Each chat should handle one small slice, stop at a clean point, and leave the next slice readable.
 The board is validated with `npm run check:todo` before normal work.
-On work branches, the active todo item ids must be declared in the board and reflected in the branch name.
 
 Everything else is expected to be rebuilt deliberately.

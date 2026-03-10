@@ -27,7 +27,7 @@
       "status": "now",
       "title": "Keep one simple todo board that can survive direction changes without getting garbled.",
       "why": "Planning drift is how the repo becomes sloppy again.",
-      "done_when": "There is one validated board with clear now, next, and later work and a second-agent review can judge it cleanly."
+      "done_when": "There is one validated board with clear now, next, and later work, and each active slice can be resumed in a fresh chat without hidden thread context."
     },
     {
       "id": "canon-engine",
