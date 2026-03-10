@@ -17,7 +17,7 @@
   "items": [
     {
       "id": "memory-exactness",
-      "status": "now",
+      "status": "done",
       "title": "Finish exact Hermes builder-memory adoption and remove any remaining fake builder-memory sources.",
       "why": "Builder continuity has to be exact and singular before the separate world systems are designed.",
       "done_when": "The vendored Hermes memory module is the only builder-memory implementation and the tests stay clean."
