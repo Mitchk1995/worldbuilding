@@ -15,11 +15,12 @@ Current state:
 - The tracked GitHub policy lives in `src/github-policy.js`, and the repo can now audit or apply it with `npm run github:policy:audit` and `npm run github:policy:apply`.
 - GitHub approving reviews are intentionally set to zero in branch protection because the real separate-agent review is enforced through the tracked review ledger and the required quality checks, not through a manual approval click.
 - The GitHub automation work item is now complete on `main` after a clean round-three pass on its own dedicated branch.
-- This branch adds reviewer traceability and review-time identity snapshots so historical reviews stay truthful when reviewer status changes later.
+- The repo now includes reviewer traceability and review-time identity snapshots so historical reviews stay truthful when reviewer status changes later.
 - The stronger dishonest-actor spoofing problem is still open and is being kept explicit instead of being falsely claimed solved.
 - The Notion server is visible in this session and the build-side mission-control page is live at [Operator Mission Control](https://www.notion.so/31e797eac74c8180bf5ae9405ebb4a40).
 - That Notion page is now the live build-side hub for active work, reviews, steerings, and open problems.
 - The Notion page now leads with a short summary and narrower tables so it is easier to scan without horizontal scrolling.
+- The repo now has a mission-control brief command so the Notion summary can be regenerated from live repo state instead of being hand-written from memory.
 - The CLI now has a built-in workspace audit command, and work completion is expected to happen from a clean repo instead of leaving large uncommitted piles behind.
 
 Hard steerings:
@@ -47,8 +48,8 @@ Known failures already recorded:
 
 Immediate next build targets:
 - Keep the live GitHub policy and the repo-tracked policy file in sync.
-- Keep the Notion mission-control page in sync as build-side work, reviews, steerings, and open problems change.
+- Keep the Notion mission-control page in sync as build-side work, reviews, steerings, and open problems change, using the mission-control brief instead of hand-written summary drift.
 - Use the built-in workspace audit and clean-finish rule so build work does not pile up as one large dirty tree again.
-- Tighten duplicate and stale-note cleanup further where close paraphrases still slip through.
+- Keep duplicate and stale-note cleanup visible through the operator brief and mission-control summary so future drift is caught early.
 - Preserve reviewer traceability and review-time identity snapshots, while keeping the stronger dishonest-actor spoofing problem open until there is tool-backed reviewer attestation.
 - Keep worldbuilding work paused until operator governance is solid.

@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { buildMissionControlBrief } from "../src/mission-control.js";
 import { createMemoryStore } from "../src/memory/store.js";
 import { searchWorkspaceText } from "../src/repo-search.js";
 import { seedInitialMemory } from "../src/memory/seed.js";
@@ -941,6 +942,43 @@ test("workspace search javascript fallback accepts file roots and warns on missi
   assert.equal(missingRootResult.matches.length, 0);
   assert.equal(missingRootResult.warnings.length, 1);
   assert.match(missingRootResult.warnings[0], /Missing root/);
+});
+
+test("mission control brief reflects current repo state and memory hygiene", () => {
+  const repoDir = initTempRepo();
+  const dbDir = mkdtempSync(join(tmpdir(), "world-memory-mission-control-"));
+  const dbPath = join(dbDir, "memory.sqlite");
+  const store = createMemoryStore(dbPath);
+  seedInitialMemory(store);
+  store.upsertProjectWorkItem({
+    id: "github-flow-automation",
+    title: "GitHub flow automation",
+    status: "done"
+  });
+  store.upsertProjectWorkItem({
+    id: "reviewer-identity-hardening",
+    title: "Reviewer traceability",
+    status: "done"
+  });
+  store.recordOperatorFailure({
+    title: "Reported work as settled before remote landing",
+    details:
+      "A finished change looked settled locally before the protected pull-request path and dashboard were caught up."
+  });
+
+  const brief = buildMissionControlBrief(store, { cwd: repoDir }).content;
+
+  assert.match(brief, /There is no open build job right now/);
+  assert.match(brief, /landed in the main line/);
+  assert.match(brief, /local workspace is clean/);
+  assert.match(
+    brief,
+    /Remote main status could not be verified|local main branch is in sync with the remote main branch/
+  );
+  assert.match(brief, /Operator memory is currently clean/);
+  assert.match(brief, /Dashboard sync is still too manual/);
+
+  store.close();
 });
 
 test("work complete via cli refuses a dirty workspace", () => {
