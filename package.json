@@ -15,6 +15,8 @@
     "github:policy:apply": "node src/github-policy.js apply",
     "reviews:sync": "node src/review-ledger.js sync",
     "reviews:check": "node src/review-ledger.js check",
+    "review-evidence:render": "node src/pr-review-evidence.js render",
+    "review-evidence:publish": "node src/pr-review-evidence.js publish",
     "test": "node --test"
   }
 }
