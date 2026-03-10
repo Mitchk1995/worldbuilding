@@ -6,6 +6,7 @@ Date: March 10, 2026
 
 Builder continuity is stable and should stay frozen unless a real defect appears.
 Canon now has an explicit boundary and approval surface.
+The board has been corrected so world foundation comes before canon content and simulation.
 
 What exists on purpose:
 
@@ -26,6 +27,7 @@ What canon means in this repo right now:
 
 What is still not built:
 
+- a world foundation brief strong enough to guide canon content
 - a real canon store or authoring workflow beyond the minimal boundary
 - the simulation runtime
 - NPC belief or memory systems
@@ -42,14 +44,16 @@ What is still not built:
 
 ## Next slice
 
-Build the smallest simulation runtime boundary that reads canon without overwriting it.
+Collaboratively define the world foundation before any simulation work starts.
 
-That runtime should stay explicitly ephemeral:
+This slice should stay small and writing-led:
 
-- current scene state
-- agent goals
-- temporary beliefs
-- rumors and plans
-- consequences in motion
+- core premise
+- tone and writing feel
+- natural conflicts and tensions
+- basic rules of reality
+- timeline anchor
+- first important places, groups, and people
+- a short list of things that should stay unknown for now
 
-Start from the canon boundary files instead of inventing new memory machinery.
+Use the result to make the next canon-content slice possible.

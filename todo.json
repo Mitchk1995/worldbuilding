@@ -1,7 +1,7 @@
 {
   "direction": {
-    "current_focus": "Build the smallest simulation runtime that can read canon without turning runtime beliefs into world truth.",
-    "why_now": "The canon boundary is now defined, so the next risk is letting the living runtime blur or overwrite approved world facts.",
+    "current_focus": "Define a small world foundation brief so canon content can be written on purpose before any simulation work starts.",
+    "why_now": "The board pointed at simulation too early. The next clean dependency is collaborative world design: premise, tone, tensions, reality rules, era, and the first important people, groups, and places.",
     "last_changed": "2026-03-10"
   },
   "limits": {
@@ -10,7 +10,7 @@
   },
   "delivery": {
     "active_item_ids": [
-      "simulation-runtime"
+      "world-foundation"
     ],
     "coupled_reason": ""
   },
@@ -38,14 +38,28 @@
     },
     {
       "id": "simulation-runtime",
-      "status": "now",
+      "status": "later",
       "title": "Build the simulation runtime that reads canon without overwriting it.",
       "why": "The living world should emerge from canon instead of replacing it.",
       "done_when": "Runtime state can evolve scene by scene while canon stays authoritative."
     },
     {
-      "id": "embodiment-layer",
+      "id": "world-foundation",
+      "status": "now",
+      "title": "Define the world foundation before any simulation work: premise, tone, tensions, reality rules, era, and the first important people, groups, and places.",
+      "why": "Canon needs a strong foundation before the repo starts storing world content or shaping a living runtime.",
+      "done_when": "A small world-foundation brief exists, reflects collaborative decisions, and leaves some areas intentionally unknown."
+    },
+    {
+      "id": "canon-content",
       "status": "next",
+      "title": "Turn the world foundation into the first small canon content slice.",
+      "why": "Once the foundation is clear, the next step is approved world facts, not simulation behavior.",
+      "done_when": "The first canon entities, places, groups, rules, and timeline anchors are drafted in a reviewable shape."
+    },
+    {
+      "id": "embodiment-layer",
+      "status": "later",
       "title": "Build the player-facing layer for entering the living world.",
       "why": "The user insertion layer only makes sense after canon and simulation are stable.",
       "done_when": "The system can place the user into a persistent scene without confusing builder state with world state."
