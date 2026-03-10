@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
 import json
-import subprocess
 import sys
+from datetime import date
 from pathlib import Path
 
 ALLOWED_STATUSES = {"now", "next", "later", "done", "dropped"}
@@ -18,12 +18,8 @@ def is_real_iso_date(value):
         return False
     try:
         year_text, month_text, day_text = text.split("-")
-        year = int(year_text)
-        month = int(month_text)
-        day = int(day_text)
-        return str(year).zfill(4) == year_text and 1 <= month <= 12 and 1 <= day <= 31 and (
-            __import__("datetime").date(year, month, day).isoformat() == text
-        )
+        parsed = date(int(year_text), int(month_text), int(day_text))
+        return parsed.isoformat() == text
     except Exception:
         return False
 
@@ -32,23 +28,11 @@ def positive_integer(value):
     return isinstance(value, int) and value > 0
 
 
-def current_branch_name(cwd):
-    try:
-        return subprocess.check_output(
-            ["git", "branch", "--show-current"],
-            cwd=cwd,
-            text=True,
-            stderr=subprocess.DEVNULL,
-        ).strip()
-    except Exception:
-        return None
-
-
 def read_todo_board(cwd="."):
     return json.loads((Path(cwd) / "todo.json").read_text(encoding="utf-8"))
 
 
-def validate_todo_board(board, branch_name=None):
+def validate_todo_board(board):
     findings = []
 
     if not isinstance(board, dict):
@@ -94,8 +78,6 @@ def validate_todo_board(board, branch_name=None):
         if not isinstance(coupled_reason, str):
             findings.append("Todo board delivery.coupled_reason must be a string.")
             coupled_reason = ""
-        if not is_non_empty_string(delivery.get("rule")):
-            findings.append("Todo board delivery.rule must be a non-empty string.")
 
     items = board.get("items")
     if not isinstance(items, list) or not items:
@@ -186,22 +168,10 @@ def validate_todo_board(board, branch_name=None):
                 "Todo board delivery.coupled_reason must be empty unless more than one active item id is selected."
             )
 
-        if branch_name and branch_name != "main":
-            if not active_ids:
-                findings.append("Non-main branches must declare at least one active delivery item id.")
-            for item_id in active_ids:
-                if is_non_empty_string(item_id) and item_id not in branch_name:
-                    findings.append(
-                        f"Branch '{branch_name}' must include active item id '{item_id}'."
-                    )
-
-        if branch_name == "main" and active_ids:
-            findings.append("Main branch must not keep active delivery item ids after work is merged.")
-
     return findings
 
 
-def inspect_todo_board(cwd=".", branch_name=None):
+def inspect_todo_board(cwd="."):
     todo_path = Path(cwd) / "todo.json"
     try:
         raw = todo_path.read_text(encoding="utf-8")
@@ -213,13 +183,12 @@ def inspect_todo_board(cwd=".", branch_name=None):
     except Exception as error:
         return {"ok": False, "board": None, "findings": [f"todo.json is not valid JSON: {error}"]}
 
-    findings = validate_todo_board(board, branch_name=branch_name)
+    findings = validate_todo_board(board)
     return {"ok": not findings, "board": board, "findings": findings}
 
 
 def main():
-    cwd = Path.cwd()
-    result = inspect_todo_board(cwd, branch_name=current_branch_name(cwd))
+    result = inspect_todo_board(Path.cwd())
     if result["ok"]:
         print("todo.json is clean")
         return 0
