@@ -145,10 +145,24 @@ jobs:
               path.resolve(process.env.GITHUB_WORKSPACE, "governance", "review-evidence-policy.json")
             );
             const evidenceComment = findLatestReviewEvidenceComment(comments, reviewEvidencePolicy);
+            const reviewEvidence = parseReviewEvidenceComment(evidenceComment?.body ?? "");
+            let changedPathsSinceReviewedHead = [];
+            if (
+              reviewEvidence?.reviewedHeadSha &&
+              reviewEvidence.reviewedHeadSha !== pullRequest.head?.sha
+            ) {
+              const comparison = await github.rest.repos.compareCommitsWithBasehead({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                basehead: `${reviewEvidence.reviewedHeadSha}...${pullRequest.head.sha}`
+              });
+              changedPathsSinceReviewedHead = (comparison.data.files ?? []).map((file) => file.filename);
+            }
             const result = validatePullRequestGovernance({
               body: pullRequest.body ?? "",
               pullRequestHeadSha: pullRequest.head?.sha ?? "",
-              reviewEvidence: parseReviewEvidenceComment(evidenceComment?.body ?? "")
+              reviewEvidence,
+              changedPathsSinceReviewedHead
             });
 
             if (result.errors.length > 0) {
