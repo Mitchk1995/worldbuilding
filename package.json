@@ -7,6 +7,7 @@
     "init:memory": "node src/cli.js init",
     "seed:memory": "node src/cli.js seed",
     "memory:brief": "node src/cli.js brief operator",
+    "ops:audit": "node src/cli.js ops audit",
     "mission-control:brief": "node src/cli.js brief mission-control",
     "mission-control:page": "node src/cli.js brief mission-control-page",
     "memory:search": "node src/cli.js search",

@@ -1275,7 +1275,11 @@ test("mission control brief reflects current repo state and memory hygiene", () 
     /Landing state could not be verified|current branch is main and is in sync with the remote main branch/
   );
   assert.match(brief, /Operator memory is currently clean/);
-  assert.match(brief, /Dashboard sync is still too manual/);
+  assert.match(brief, /Operator audits are/);
+  assert.match(
+    brief,
+    /Reported work as settled before remote landing|Scoped research too narrowly|Opened unrelated memory skills/
+  );
 
   store.close();
 });

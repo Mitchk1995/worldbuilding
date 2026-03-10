@@ -4,11 +4,13 @@ import {
   DEFAULT_OPERATOR_DB_PATH,
   DEFAULT_WORLD_DB_PATH
 } from "./memory/store.js";
+import { buildOperatorSystemsAudit } from "./operator-audit.js";
 import { seedInitialMemory } from "./memory/seed.js";
 import {
   buildMissionControlBrief,
   buildMissionControlPageContent
 } from "./mission-control.js";
+import { buildAgentOrgBrief } from "./agent-org.js";
 import { searchWorkspaceText } from "./repo-search.js";
 import { buildWorkspaceDirtyMessage, getGitHeadSha, getWorkspaceAudit } from "./workspace.js";
 
@@ -17,6 +19,7 @@ function printUsage() {
   node src/cli.js init [dbPath]
   node src/cli.js seed [dbPath]
   node src/cli.js brief operator [dbPath]
+  node src/cli.js brief org
   node src/cli.js brief entity <entityId> [dbPath]
   node src/cli.js brief mission-control [dbPath]
   node src/cli.js brief mission-control-page [dbPath]
@@ -37,6 +40,7 @@ function printUsage() {
   node src/cli.js audit add <workId> <type> <verdict> <reviewer> <notes> [dbPath]
   node src/cli.js audit list [workId] [dbPath]
   node src/cli.js audit-memory [dbPath]
+  node src/cli.js ops audit [dbPath]
   node src/cli.js workspace audit
   node src/cli.js workspace search <query> [root...]
   node src/cli.js entity <id> <kind> <name> [dbPath]
@@ -159,6 +163,11 @@ function main() {
       const store = createMemoryStore(dbPath);
       console.log(store.buildOperatorBrief().content);
       store.close();
+      return;
+    }
+
+    if (kind === "org") {
+      console.log(buildAgentOrgBrief().content);
       return;
     }
 
@@ -479,6 +488,17 @@ function main() {
         2
       )
     );
+    store.close();
+    return;
+  }
+
+  if (command === "ops") {
+    if (args[1] !== "audit") {
+      throw new Error("Ops supports only the 'audit' action.");
+    }
+    const dbPath = readDbPath(args, 2);
+    const store = createMemoryStore(dbPath);
+    console.log(JSON.stringify(buildOperatorSystemsAudit(store), null, 2));
     store.close();
     return;
   }

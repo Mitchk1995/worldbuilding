@@ -1,4 +1,6 @@
 import { execFileSync } from "node:child_process";
+import { buildAgentOrgBrief } from "./agent-org.js";
+import { buildOperatorSystemsAudit } from "./operator-audit.js";
 import { getWorkspaceAudit } from "./workspace.js";
 
 const MISSION_CONTROL_DATABASES = [
@@ -143,23 +145,22 @@ export function buildMissionControlBrief(store, { cwd = process.cwd() } = {}) {
   const openWork = store
     .listProjectWorkItems()
     .filter((item) => !["done", "cancelled"].includes(item.status));
+  const openFailures = store.listOperatorFailures("open");
   const memoryAudit = store.auditOperatorMemory();
+  const systemsAudit = buildOperatorSystemsAudit(store, { cwd });
   const workspaceAudit = getWorkspaceAudit(cwd);
   const landingState = gitLandingState(cwd);
   const githubAutomationDone = workIsDone(store, "github-flow-automation");
   const reviewerTraceabilityDone = workIsDone(store, "reviewer-identity-hardening");
-  const notionLayoutLimit = Boolean(
-    findOpenFailure(store, "Notion inline board rendering is limited")
-  );
   const reviewerScopeDeprioritized = Boolean(
     findOpenSteering(store, "solo-review-scope")
   );
-  const reviewerSpoofingRisk =
-    Boolean(findOpenFailure(store, "Independent review identity can be spoofed")) &&
-    !reviewerScopeDeprioritized;
-  const dashboardSyncGap = Boolean(
-    findOpenFailure(store, "Reported work as settled before remote landing")
-  );
+  const visibleFailures = openFailures.filter((failure) => {
+    return !(
+      reviewerScopeDeprioritized &&
+      failure.title === "Independent review identity can be spoofed"
+    );
+  });
 
   const matterLines = [];
   if (openWork.length === 0) {
@@ -217,31 +218,16 @@ export function buildMissionControlBrief(store, { cwd = process.cwd() } = {}) {
   matterLines.push(
     `- Operator memory is currently clean: ${memoryAudit.summary.exactDuplicates} exact duplicates, ${memoryAudit.summary.likelyDuplicates} likely duplicates, and ${memoryAudit.summary.staleOpenRecords} stale open records over ${memoryAudit.summary.staleDays} days.`
   );
-
-  if (notionLayoutLimit) {
-    matterLines.push(
-      "- This Notion surface still works best as a compact hub with the live detail tables underneath."
-    );
-  }
+  matterLines.push(
+    `- Operator audits are ${systemsAudit.overengineering.status} for overengineering and ${systemsAudit.efficiency.status} for efficiency.`
+  );
 
   const problemLines = [];
-  if (notionLayoutLimit) {
-    problemLines.push(
-      "- Notion inline board rendering is still limited, so this page still uses a safer hub layout."
-    );
-  }
-  if (reviewerSpoofingRisk) {
-    problemLines.push(
-      "- Independent review identity can still be spoofed by a dishonest actor."
-    );
-  }
-  if (dashboardSyncGap) {
-    problemLines.push(
-      "- Dashboard sync is still too manual. A finished change can look settled locally before the protected pull-request path and dashboard are actually caught up."
-    );
+  for (const failure of visibleFailures.slice(0, 3)) {
+    problemLines.push(`- ${failure.title}: ${failure.details}`);
   }
   if (problemLines.length === 0) {
-    problemLines.push("- No major open dashboard problem is currently recorded.");
+    problemLines.push("- No open operator problem is currently recorded.");
   }
 
   const refreshLines = [
@@ -341,6 +327,8 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
   const workspaceAudit = getWorkspaceAudit(cwd);
   const landingState = gitLandingState(cwd);
   const brief = buildMissionControlBrief(store, { cwd });
+  const systemsAudit = buildOperatorSystemsAudit(store, { cwd, workspaceAudit });
+  const orgBrief = buildAgentOrgBrief();
 
   const statusCard = buildCalloutBlock({
     icon: openWork.length === 0 ? "✅" : "🛠️",
@@ -376,6 +364,31 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
     color: "purple_bg",
     title: "Refresh Rule",
     lines: brief.refreshLines.map((line) => line.replace(/^- /, ""))
+  });
+
+  const auditCard = buildCalloutBlock({
+    icon: "OPS",
+    color:
+      systemsAudit.overengineering.status === "fail" || systemsAudit.efficiency.status === "fail"
+        ? "red_bg"
+        : systemsAudit.overengineering.status === "warn" ||
+            systemsAudit.efficiency.status === "warn"
+          ? "yellow_bg"
+          : "green_bg",
+    title: "Operator Audits",
+    lines: [
+      `Overengineering: ${systemsAudit.overengineering.status}.`,
+      ...systemsAudit.overengineering.issues.slice(0, 2).map((issue) => issue.message),
+      `Efficiency: ${systemsAudit.efficiency.status}.`,
+      ...systemsAudit.efficiency.issues.slice(0, 2).map((issue) => issue.message)
+    ]
+  });
+
+  const orgCard = buildCalloutBlock({
+    icon: "ORG",
+    color: "blue_bg",
+    title: "Agent Seats",
+    lines: orgBrief.roles.map((role) => `${role.title}: ${role.persona}`)
   });
 
   const liveBoardColumns = [
@@ -423,7 +436,15 @@ export function buildMissionControlPageContent(store, { cwd = process.cwd() } = 
     "</columns>",
     "<columns>",
     "\t<column>",
+    indentBlock(auditCard, 2),
+    "\t</column>",
+    "\t<column>",
     indentBlock(riskCard, 2),
+    "\t</column>",
+    "</columns>",
+    "<columns>",
+    "\t<column>",
+    indentBlock(orgCard, 2),
     "\t</column>",
     "\t<column>",
     indentBlock(refreshCard, 2),
