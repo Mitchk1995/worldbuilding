@@ -66,7 +66,7 @@ Before substantial work:
 - Be decisive about deleting wrong-shaped systems.
 - Keep the repo small unless a new file clearly earns its place.
 - Keep `todo.json` as the single planning surface. Change direction there instead of scattering plans across chat.
-- Keep PRs small by mapping each PR to one todo item id unless two items are explicitly coupled.
-- When working on a branch, set `todo.json` delivery.active_item_ids to the one active item id, or the two coupled ids if there is an explicit coupled reason.
+- Keep PRs small by mapping each PR to one todo item id, or two ids only when they are explicitly coupled.
+- When working on a branch, set `todo.json` `delivery.active_item_ids` to the one active item id, or the two coupled ids if there is an explicit coupled reason.
 - When working on a branch, include the active item id or ids in the branch name so the scope is visible.
 - Once a clean item is tested and committed, merge it to `main` immediately and delete the work branch. Do not leave finished work stranded on a side branch.
