@@ -5,7 +5,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from tools import memory_tool as memory_tool_module
-from tools.memory_tool import ENTRY_DELIMITER, MemoryStore, memory_tool, _scan_memory_content
+from tools.memory_tool import ENTRY_DELIMITER, MEMORY_SCHEMA, MemoryStore, memory_tool, _scan_memory_content
 
 
 class MemoryToolTestCase(unittest.TestCase):
@@ -229,6 +229,14 @@ class MemoryToolTestCase(unittest.TestCase):
     def test_remove_requires_old_text(self):
         result = json.loads(memory_tool(action="remove", store=self.store))
         self.assertFalse(result["success"])
+
+    def test_schema_description_pushes_strict_memory_hygiene(self):
+        description = MEMORY_SCHEMA["description"]
+
+        self.assertIn("DO NOT SAVE", description)
+        self.assertIn("world/", description)
+        self.assertIn("progress.md or todo.json", description)
+        self.assertNotIn("log it like a diary entry", description)
 
 
 if __name__ == "__main__":

@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "check:todo": "python -m tools.todo_check",
+    "check:world": "python -m tools.world_check",
     "test:js": "node --test",
     "test:py": "python -m unittest discover -s test_python -p \"test_*.py\"",
-    "test": "npm run check:todo && npm run test:js && npm run test:py"
+    "test": "npm run check:todo && npm run check:world && npm run test:js && npm run test:py"
   }
 }

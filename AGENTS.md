@@ -101,13 +101,11 @@ Before substantial work:
 This section is auto-generated from Hermes MEMORY.md and USER.md so new Codex chats get the same small builder-continuity snapshot automatically. Treat it as builder continuity only, never as world canon. Do not edit it by hand.
 
 ══════════════════════════════════════════════
-MEMORY (your personal notes) [36% — 813/2,200 chars]
+MEMORY (your personal notes) [29% — 644/2,200 chars]
 ══════════════════════════════════════════════
 Use Hermes memory proactively for durable user corrections and workflow rules. Keep planning systems minimal and avoid adding policy sludge.
 §
 Do not conflate builder continuity memory with the future world's separate memory and agent system. Hermes memory work here is only for preserving the build process.
-§
-Repo-local legacy sqlite stores and browser dump folders were purged. Builder continuity now lives in Hermes memory plus the repo's todo, progress, and context files.
 §
 During world-design work, keep actual world decisions in repo design files and handoffs, not in Hermes memory. Preserve player-facing mystery without storing secret lore in operator memory.
 §

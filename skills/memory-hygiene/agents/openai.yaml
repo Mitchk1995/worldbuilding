@@ -1,0 +1,4 @@
+interface:
+  display_name: "Memory Hygiene"
+  short_description: "Keep memory strict, minimal, and out of the wrong files."
+  default_prompt: "Use $memory-hygiene to decide whether something belongs in durable memory or should live in world files, progress.md, or todo.json instead."

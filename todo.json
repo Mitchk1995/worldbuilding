@@ -1,7 +1,7 @@
 {
   "direction": {
-    "current_focus": "Finish the world foundation through small threshold-hub-led slices so the first canon content can be written with a clearer social and geographic frame.",
-    "why_now": "The outward route shape is now clear enough that the next useful decision is one grounded local institution inside the hub instead of more broad world expansion.",
+    "current_focus": "Return to the threshold-hub institution slice now that the cleanup guardrails are in place.",
+    "why_now": "The world tree and builder-memory surface now have the small guardrails they needed, so the next useful step is a grounded local institution inside the hub.",
     "last_changed": "2026-03-11"
   },
   "limits": {
@@ -28,13 +28,6 @@
       "title": "Stabilize the adapted Hermes-derived builder-memory module and remove any remaining fake builder-memory sources.",
       "why": "Builder continuity still has to stay singular and trustworthy before the separate world systems are designed.",
       "done_when": "The adapted Hermes-derived memory module is the only builder-memory implementation and the tests stay clean."
-    },
-    {
-      "id": "todo-board",
-      "status": "later",
-      "title": "Keep one simple todo board that stays truthful as future slices land.",
-      "why": "Planning drift is still how the repo gets sloppy again, even with a smaller steady-state shape.",
-      "done_when": "After each clean stop, the board still has one active slice, a clear next horizon, and a clear later horizon without hidden thread context."
     },
     {
       "id": "canon-engine",
@@ -70,6 +63,13 @@
       "title": "Define one local institution that embodies the struggle between sponsor legitimacy and lived frontier competence.",
       "why": "A single institution can make the hub's social conflict feel grounded without forcing full political systems too early.",
       "done_when": "One hub institution clearly shows how inland authority and real outward credibility collide."
+    },
+    {
+      "id": "world-guard-memory-hygiene",
+      "status": "done",
+      "title": "Add a small world-structure guard and a strict memory-hygiene skill.",
+      "why": "The repo now has enough foundation files and builder-memory language that a light guardrail slice can prevent future mess without adding a larger system.",
+      "done_when": "A small `check:world` script validates world indexes and file length guardrails, tests cover the main failure cases, the memory-hygiene skill exists, and repo docs describe memory honestly if the current setup is only file-backed persistence plus AGENTS sync."
     },
     {
       "id": "threshold-hub-local-life",

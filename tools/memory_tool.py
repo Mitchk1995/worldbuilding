@@ -8,10 +8,11 @@ Provides bounded, file-backed memory that persists across sessions. Two stores:
   - USER.md: what the agent knows about the user (preferences, communication style,
     expectations, workflow habits)
 
-Both are injected into the system prompt as a frozen snapshot at session start.
-Mid-session writes update files on disk immediately (durable) but do NOT change
-the system prompt -- this preserves the prefix cache for the entire session.
-The snapshot refreshes on the next session start.
+When a host agent wires this module into session startup, these files can be
+injected into the system prompt as a frozen snapshot. Mid-session writes update
+files on disk immediately (durable) but do NOT change the current prompt. In
+this repo today, the reliable continuity surface is the file-backed store plus
+the AGENTS.md snapshot sync.
 
 Entry delimiter: section sign (U+00A7). Entries can be multiline.
 Character limits (not tokens) because char counts are model-independent.
@@ -422,15 +423,17 @@ MEMORY_SCHEMA = {
     "name": "memory",
     "description": (
         "Save important information to persistent memory that survives across sessions. "
-        "Your memory appears in your system prompt at session start -- it's how you "
-        "remember things about the user and your environment between conversations.\n\n"
+        "In this repo, treat memory as a tiny builder-continuity surface, not as a general notebook.\n\n"
         "WHEN TO SAVE (do this proactively, don't wait to be asked):\n"
-        "- User shares a preference, habit, or personal detail (name, role, timezone, coding style)\n"
-        "- You discover something about the environment (OS, installed tools, project structure)\n"
-        "- User corrects you or says 'remember this' / 'don't do that again'\n"
-        "- You learn a convention, API quirk, or workflow specific to this user's setup\n"
-        "- You completed something - log it like a diary entry\n"
-        "- After completing a complex task, save a brief note about what was done\n\n"
+        "- Durable user preferences, corrections, or communication expectations\n"
+        "- Durable workflow rules or conventions that are not already kept in repo files\n"
+        "- Hard-to-rediscover environment facts, tool quirks, or setup details\n\n"
+        "DO NOT SAVE:\n"
+        "- World lore, design notes, or canon candidates (put those in world/)\n"
+        "- Handoff notes, next steps, or slice status (put those in progress.md or todo.json)\n"
+        "- Completed-task diary entries or routine summaries\n"
+        "- Routine repo facts that are already written in tracked repo files\n"
+        "- Anything easy to rediscover or not clearly durable\n\n"
         "- If you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool\n\n"
         "TWO TARGETS:\n"
         "- 'user': who the user is -- name, role, preferences, communication style, pet peeves\n"
