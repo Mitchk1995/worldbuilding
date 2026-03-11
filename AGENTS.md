@@ -78,7 +78,7 @@ Before substantial work:
 - End each slice with a short handoff in `progress.md` so the next chat can start cleanly without depending on thread history.
 - Rewrite `progress.md` to the current handoff state. Do not turn it into an append-only log.
 - Keep PRs small by mapping each change slice to one active item id, or two ids only when they are explicitly coupled.
-- Once a clean item is tested and committed, merge it to `main` immediately and delete the work branch. Do not leave finished work stranded on a side branch.
+- Once a clean item is tested and committed, merge it to `main` immediately, push `main`, and delete the local and remote work branch. Do not leave finished work stranded on a side branch.
 
 ## World file pathing
 

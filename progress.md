@@ -85,4 +85,5 @@ This cleanup pass also made `outer-island-belt.md` the main outward-direction re
 This cleanup slice also removed the old duplicate world-foundation pointer file, so `world/INDEX.md` is now the only entry path for foundation browsing.
 Builder continuity prompt assembly now skips the root `AGENTS.md` snapshot on its context pass, so Hermes memory is no longer loaded twice at startup.
 Prompt-safety rules are aligned again across project context and Hermes memory loading, and the continuity helper launchers now resolve the repo path relative to themselves instead of hardcoding one machine path.
+The operating contract now states the full slice finish rule explicitly: merge to `main`, push `main`, and delete the local and remote work branch every time a slice is done.
 The todo board now reflects the next narrow slice: the current active item is one hub institution, with local-staying life and first canon content still waiting behind it.
