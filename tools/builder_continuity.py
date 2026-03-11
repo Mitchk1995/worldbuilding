@@ -29,11 +29,18 @@ LEGACY_SNAPSHOT_END = "## AUTO-GENERATED BUILDER CONTINUITY SNAPSHOT - END"
 LEGACY_HINT_LINE = "- After Hermes memory changes or continuity fixes, run `python -m tools.builder_continuity sync-agents` so new Codex chats get the fresh auto-loaded snapshot."
 
 
-def build_project_context_prompt(cwd: Optional[str] = None) -> str:
+def build_project_context_prompt(
+    cwd: Optional[str] = None,
+    *,
+    strip_root_snapshot: bool = False,
+) -> str:
     """Render the project context block through the JS loader."""
     target_cwd = str(Path(cwd).resolve()) if cwd else str(ROOT_DIR)
+    command = ["node", str(PROJECT_CONTEXT_SCRIPT), target_cwd]
+    if strip_root_snapshot:
+        command.append("--strip-root-snapshot")
     result = subprocess.run(
-        ["node", str(PROJECT_CONTEXT_SCRIPT), target_cwd],
+        command,
         capture_output=True,
         text=True,
         encoding="utf-8",
@@ -67,7 +74,7 @@ def build_builder_continuity_prompt(
             prompt_parts.append(user_block)
 
     if include_context:
-        context_prompt = build_project_context_prompt(cwd)
+        context_prompt = build_project_context_prompt(cwd, strip_root_snapshot=True)
         if context_prompt:
             prompt_parts.append(context_prompt)
 
@@ -102,7 +109,7 @@ def builder_continuity_status(cwd: Optional[str] = None) -> Dict[str, object]:
     memory_path = HERMES_HOME / "memories" / "MEMORY.md"
     user_path = HERMES_HOME / "memories" / "USER.md"
     upstream_path = resolve_upstream_source_path()
-    context_prompt = build_project_context_prompt(cwd)
+    context_prompt = build_project_context_prompt(cwd, strip_root_snapshot=True)
     expected_snapshot = build_agents_snapshot_section()
     current_snapshot = read_agents_snapshot_section()
 

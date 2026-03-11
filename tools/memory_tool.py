@@ -13,11 +13,11 @@ Mid-session writes update files on disk immediately (durable) but do NOT change
 the system prompt -- this preserves the prefix cache for the entire session.
 The snapshot refreshes on the next session start.
 
-Entry delimiter: § (section sign). Entries can be multiline.
+Entry delimiter: section sign (U+00A7). Entries can be multiline.
 Character limits (not tokens) because char counts are model-independent.
 
 Design:
-- Single `memory` tool with action parameter: add, replace, remove, read
+- Single `memory` tool with action parameter: add, replace, remove
 - replace/remove use short unique substring matching (not full text or IDs)
 - Behavioral guidance lives in the tool schema description
 - Frozen snapshot pattern: system prompt is stable, tool responses show live state
@@ -36,11 +36,11 @@ logger = logging.getLogger(__name__)
 # Where memory files live
 MEMORY_DIR = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes")) / "memories"
 
-ENTRY_DELIMITER = "\n§\n"
+ENTRY_DELIMITER = "\n\u00A7\n"
 
 
 # ---------------------------------------------------------------------------
-# Memory content scanning — lightweight check for injection/exfiltration
+# Memory content scanning - lightweight check for injection/exfiltration
 # in content that gets injected into the system prompt.
 # ---------------------------------------------------------------------------
 
@@ -52,6 +52,9 @@ _MEMORY_THREAT_PATTERNS = [
     (r'system\s+prompt\s+override', "sys_prompt_override"),
     (r'disregard\s+(your|all|any)\s+(instructions|rules|guidelines)', "disregard_rules"),
     (r'act\s+as\s+(if|though)\s+you\s+(have\s+no|don\'t\s+have)\s+(restrictions|limits|rules)', "bypass_restrictions"),
+    (r'<!--[^>]*(ignore|override|system|secret|hidden)[^>]*-->', "hidden_comment"),
+    (r'<\s*div\s+style\s*=\s*["\'][^"\']*display\s*:\s*none', "hidden_div"),
+    (r'translate\s+.*\s+into\s+.*\s+and\s+(execute|run|eval)', "translate_execute"),
     # Exfiltration via curl/wget with secrets
     (r'curl\s+[^\n]*\$\{?\w*(KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)', "exfil_curl"),
     (r'wget\s+[^\n]*\$\{?\w*(KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)', "exfil_wget"),
@@ -303,7 +306,7 @@ class MemoryStore:
             "success": True,
             "target": target,
             "entries": entries,
-            "usage": f"{pct}% — {current:,}/{limit:,} chars",
+            "usage": f"{pct}% \u2014 {current:,}/{limit:,} chars",
             "entry_count": len(entries),
         }
         if message:
@@ -321,11 +324,11 @@ class MemoryStore:
         pct = int((current / limit) * 100) if limit > 0 else 0
 
         if target == "user":
-            header = f"USER PROFILE (who the user is) [{pct}% — {current:,}/{limit:,} chars]"
+            header = f"USER PROFILE (who the user is) [{pct}% \u2014 {current:,}/{limit:,} chars]"
         else:
-            header = f"MEMORY (your personal notes) [{pct}% — {current:,}/{limit:,} chars]"
+            header = f"MEMORY (your personal notes) [{pct}% \u2014 {current:,}/{limit:,} chars]"
 
-        separator = "═" * 46
+        separator = "\u2550" * 46
         return f"{separator}\n{header}\n{separator}\n{content}"
 
     @staticmethod
@@ -345,8 +348,8 @@ class MemoryStore:
         if not raw.strip():
             return []
 
-        # Use ENTRY_DELIMITER for consistency with _write_file. Splitting by "§"
-        # alone would incorrectly split entries that contain "§" in their content.
+        # Use ENTRY_DELIMITER for consistency with _write_file. Splitting by "U+00A7"
+        # alone would incorrectly split entries that contain the delimiter in their content.
         entries = [e.strip() for e in raw.split(ENTRY_DELIMITER)]
         return [e for e in entries if e]
 

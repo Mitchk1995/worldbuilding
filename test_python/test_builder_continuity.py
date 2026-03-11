@@ -27,8 +27,17 @@ class BuilderContinuityTestCase(unittest.TestCase):
         self.memory_dir.cleanup()
 
     def test_combined_prompt_includes_memory_user_and_context(self):
-        (self.project_path / "AGENTS.md").write_text("Root instructions.", encoding="utf-8")
+        (self.project_path / "AGENTS.md").write_text(
+            "Root instructions.\n\n"
+            "<!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->\n"
+            "Duplicated snapshot.\n"
+            "<!-- END AUTO-GENERATED BUILDER CONTINUITY -->\n",
+            encoding="utf-8",
+        )
         (self.project_path / "SOUL.md").write_text("Be warm and direct.", encoding="utf-8")
+        nested_dir = self.project_path / "world"
+        nested_dir.mkdir()
+        (nested_dir / "AGENTS.md").write_text("Nested instructions.", encoding="utf-8")
 
         store = MemoryStore()
         store.load_from_disk()
@@ -43,8 +52,12 @@ class BuilderContinuityTestCase(unittest.TestCase):
         self.assertIn("Prefers plain English.", prompt)
         self.assertIn("# Project Context", prompt)
         self.assertIn("Root instructions.", prompt)
+        self.assertIn("Nested instructions.", prompt)
+        self.assertNotIn("Duplicated snapshot.", prompt)
         self.assertIn("If SOUL.md is present, embody its persona and tone.", prompt)
         self.assertIn("Be warm and direct.", prompt)
+        self.assertEqual(prompt.count("MEMORY (your personal notes)"), 1)
+        self.assertEqual(prompt.count("USER PROFILE (who the user is)"), 1)
 
     def test_sync_agents_materializes_memory_snapshot(self):
         self.agents_path.write_text("Base instructions.\n", encoding="utf-8")

@@ -1,3 +1,3 @@
 $ErrorActionPreference = "Stop"
-Set-Location "D:\codexcoding\worldbuilding"
+Set-Location (Split-Path $PSScriptRoot -Parent)
 py -3 -m tools.builder_continuity sync-agents | Out-Null

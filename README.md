@@ -14,6 +14,7 @@ What remains:
 - an indexed `world/` tree for the working foundation
 
 The Hermes module is only for builder continuity. World canon and world runtime are separate future systems.
+World foundation work now starts from `world/INDEX.md` and `world/foundation/INDEX.md`.
 
 Direction changes now belong in the todo board and progress record instead of getting lost in one long chat.
 Each chat should handle one small slice, stop at a clean point, and leave the next slice readable.

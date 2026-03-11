@@ -1,4 +1,4 @@
 @echo off
 setlocal
-cd /d D:\codexcoding\worldbuilding
+cd /d "%~dp0.."
 py -3 -m tools.builder_continuity sync-agents >nul

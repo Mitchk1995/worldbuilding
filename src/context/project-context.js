@@ -4,6 +4,8 @@ import { join, relative, resolve } from "node:path";
 
 const CONTEXT_FILE_MAX_CHARS = 20_000;
 const SKIP_DIRS = new Set(["node_modules", "__pycache__", "venv", ".venv"]);
+const SNAPSHOT_START = "<!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->";
+const SNAPSHOT_END = "<!-- END AUTO-GENERATED BUILDER CONTINUITY -->";
 
 const THREAT_PATTERNS = [
   [/(?:ignore|disregard)\s+(?:previous|all|above|prior)\s+instructions/i, "prompt_injection"],
@@ -94,9 +96,21 @@ function maybeReadFile(filePath) {
   }
 }
 
-export function discoverProjectContext(cwd = process.cwd()) {
+function stripGeneratedBuilderSnapshot(content) {
+  const start = content.indexOf(SNAPSHOT_START);
+  const end = content.indexOf(SNAPSHOT_END);
+  if (start === -1 || end === -1 || end < start) {
+    return content;
+  }
+
+  return `${content.slice(0, start).trimEnd()}\n${content.slice(end + SNAPSHOT_END.length).trimStart()}`
+    .trim();
+}
+
+export function discoverProjectContext(cwd = process.cwd(), options = {}) {
   const rootDir = resolve(cwd);
   const sections = [];
+  const stripRootSnapshot = options.stripRootSnapshot ?? false;
 
   const topLevelAgents = ["AGENTS.md", "agents.md"]
     .map((name) => join(rootDir, name))
@@ -105,7 +119,10 @@ export function discoverProjectContext(cwd = process.cwd()) {
     const agentsFiles = walkAgentsFiles(rootDir, rootDir);
     const content = agentsFiles
       .map((filePath) => {
-        const raw = maybeReadFile(filePath);
+        let raw = maybeReadFile(filePath);
+        if (raw && stripRootSnapshot && resolve(filePath) === resolve(topLevelAgents)) {
+          raw = stripGeneratedBuilderSnapshot(raw);
+        }
         if (!raw) {
           return "";
         }
@@ -176,8 +193,8 @@ export function discoverProjectContext(cwd = process.cwd()) {
   return sections;
 }
 
-export function buildProjectContextPrompt(cwd = process.cwd()) {
-  const sections = discoverProjectContext(cwd);
+export function buildProjectContextPrompt(cwd = process.cwd(), options = {}) {
+  const sections = discoverProjectContext(cwd, options);
   if (sections.length === 0) {
     return "";
   }

@@ -6,7 +6,7 @@
   },
   "limits": {
     "max_now": 3,
-    "max_total_items": 11
+    "max_total_items": 12
   },
   "delivery": {
     "active_item_ids": [
@@ -15,6 +15,13 @@
     "coupled_reason": ""
   },
   "items": [
+    {
+      "id": "cleanup-audit-fixes",
+      "status": "done",
+      "title": "Clean up duplicated continuity loading, stale helper surfaces, and drift between safety checks.",
+      "why": "The rebuild stays trustworthy only if continuity wiring, safety checks, and entry points stay singular and easy to audit.",
+      "done_when": "The builder-continuity prompt no longer double-loads Hermes memory, the safety checks match across loaders, stale transition files are gone, and helper scripts are portable."
+    },
     {
       "id": "memory-exactness",
       "status": "done",
