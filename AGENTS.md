@@ -14,7 +14,7 @@ An agentic worldbuilding system that can eventually place the user inside a livi
 - `progress.md`: current handoff state
 - `todo.json`: single planning surface for active and upcoming slices
 - adapted Hermes-derived operator memory module: small, curated, durable notes only
-- Project context files: instructions that belong in files, not memory
+- Project instruction files: instructions that belong in files, not memory
 
 ## What this repo avoids
 
@@ -46,7 +46,7 @@ Before substantial work:
 3. Read `todo.json`.
 4. Run `npm run check:todo`.
 5. Read the Hermes-style operator memory files if they exist.
-6. Run `python -m tools.builder_continuity status --cwd .` and read the adapted Hermes-derived memory module, the builder-continuity adapter, the project context loader, and `docs/architecture.md`.
+6. Run `python -m tools.builder_continuity status` and read the adapted Hermes-derived memory module, the builder-continuity adapter, and `docs/architecture.md`.
 7. Run `git status --short`.
 8. If the work depends on current platforms, models, or best practices, verify with current sources first.
 9. If Hermes behavior matters, inspect the local Hermes clone recorded in `HERMES_HOME/UPSTREAM_SOURCE.txt` before inventing a replacement.
@@ -61,7 +61,7 @@ Before substantial work:
 ## Implementation order
 
 1. Operator continuity:
-   adapted Hermes-derived durable memory plus project context loading for builder continuity while the world is being built.
+   adapted Hermes-derived durable memory plus the AGENTS sync bridge for builder continuity while the world is being built.
 2. Canon engine:
    reviewable world facts, timelines, entities, and approved changes.
 3. Simulation runtime:
@@ -114,7 +114,7 @@ During world-design work, keep actual world decisions in repo design files and h
 Keep world gameplay and future simulation systems separate from planning and implementation surfaces such as todo, progress, and build notes.
 
 ══════════════════════════════════════════════
-USER PROFILE (who the user is) [71% — 982/1,375 chars]
+USER PROFILE (who the user is) [83% — 1,142/1,375 chars]
 ══════════════════════════════════════════════
 The user hates overengineering and expects simple systems with only the minimum necessary moving parts.
 §
@@ -127,4 +127,6 @@ When a world-design choice could expose spoilers, frame questions indirectly so 
 Keep world knowledge out of Hermes memory. The user wants world files to stay highly organized, easy to navigate, and scalable without forcing large context loads.
 §
 When the user is unsure how to structure worldbuilding, choose the next best-practice design anchor instead of asking them to architect the process.
+§
+Be sharply scrutinizing about redundant or dead systems. If something is obviously duplicative, cut it instead of justifying it, and keep explanations tight.
 <!-- END AUTO-GENERATED BUILDER CONTINUITY -->

@@ -18,9 +18,9 @@
     {
       "id": "cleanup-audit-fixes",
       "status": "done",
-      "title": "Clean up duplicated continuity loading, stale helper surfaces, stale transition framing, and drift between safety checks.",
-      "why": "The operating surface stays trustworthy only if continuity wiring, core docs, safety checks, and entry points stay singular and easy to audit.",
-      "done_when": "The builder-continuity prompt no longer double-loads Hermes memory, prompt-safety rules come from one shared source, stale transition files are gone, the old architecture-doc path is gone, old sync wrappers are removed, the core docs use steady-state language, the regression check protects that surface, and the todo guard enforces active slice ids."
+      "title": "Prune redundant continuity surfaces, stale helper paths, and drift between safety checks.",
+      "why": "The operating surface stays trustworthy only if AGENTS auto-load remains the only repo-side continuity injection path and dead helper layers get removed instead of justified.",
+      "done_when": "The dead project-context prompt assembly path is gone, AGENTS sync remains the only repo-side continuity bridge, stale docs and tests are updated, the old architecture-doc path stays gone, the compatibility sync wrappers remain only where externally needed, and the regression check protects the simpler surface."
     },
     {
       "id": "memory-adaptation",

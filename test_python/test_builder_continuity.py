@@ -26,39 +26,6 @@ class BuilderContinuityTestCase(unittest.TestCase):
         self.project_dir.cleanup()
         self.memory_dir.cleanup()
 
-    def test_combined_prompt_includes_memory_user_and_context(self):
-        (self.project_path / "AGENTS.md").write_text(
-            "Root instructions.\n\n"
-            "<!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->\n"
-            "Duplicated snapshot.\n"
-            "<!-- END AUTO-GENERATED BUILDER CONTINUITY -->\n",
-            encoding="utf-8",
-        )
-        (self.project_path / "SOUL.md").write_text("Be warm and direct.", encoding="utf-8")
-        nested_dir = self.project_path / "world"
-        nested_dir.mkdir()
-        (nested_dir / "AGENTS.md").write_text("Nested instructions.", encoding="utf-8")
-
-        store = MemoryStore()
-        store.load_from_disk()
-        store.add("memory", "Builder continuity lives in Hermes memory.")
-        store.add("user", "Prefers plain English.")
-
-        prompt = builder_continuity.build_builder_continuity_prompt(cwd=str(self.project_path))
-
-        self.assertIn("MEMORY (your personal notes)", prompt)
-        self.assertIn("Builder continuity lives in Hermes memory.", prompt)
-        self.assertIn("USER PROFILE (who the user is)", prompt)
-        self.assertIn("Prefers plain English.", prompt)
-        self.assertIn("# Project Context", prompt)
-        self.assertIn("Root instructions.", prompt)
-        self.assertIn("Nested instructions.", prompt)
-        self.assertNotIn("Duplicated snapshot.", prompt)
-        self.assertIn("If SOUL.md is present, embody its persona and tone.", prompt)
-        self.assertIn("Be warm and direct.", prompt)
-        self.assertEqual(prompt.count("MEMORY (your personal notes)"), 1)
-        self.assertEqual(prompt.count("USER PROFILE (who the user is)"), 1)
-
     def test_sync_agents_materializes_memory_snapshot(self):
         self.agents_path.write_text("Base instructions.\n", encoding="utf-8")
 
@@ -75,11 +42,10 @@ class BuilderContinuityTestCase(unittest.TestCase):
         self.assertIn("Prefers plain English.", agents_text)
         self.assertIn(builder_continuity.SNAPSHOT_END, agents_text)
 
-    def test_sync_agents_replaces_legacy_snapshot(self):
+    def test_sync_agents_replaces_existing_snapshot(self):
         self.agents_path.write_text(
             "Base instructions.\n\n"
-            "- After Hermes memory changes or continuity fixes, run `python -m tools.builder_continuity sync-agents` so new Codex chats get the fresh auto-loaded snapshot.\n\n"
-            "## AUTO-GENERATED BUILDER CONTINUITY SNAPSHOT - START\nlegacy\n## AUTO-GENERATED BUILDER CONTINUITY SNAPSHOT - END\n",
+            "<!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->\nold snapshot\n<!-- END AUTO-GENERATED BUILDER CONTINUITY -->\n",
             encoding="utf-8",
         )
 
@@ -90,8 +56,7 @@ class BuilderContinuityTestCase(unittest.TestCase):
         builder_continuity.sync_agents_snapshot()
         agents_text = self.agents_path.read_text(encoding="utf-8")
 
-        self.assertNotIn("legacy", agents_text)
-        self.assertNotIn("sync-agents", agents_text)
+        self.assertNotIn("old snapshot", agents_text)
         self.assertIn("Fresh snapshot.", agents_text)
 
     def test_status_reports_synced_agents_snapshot(self):
@@ -102,7 +67,7 @@ class BuilderContinuityTestCase(unittest.TestCase):
         store.add("memory", "Builder note.")
 
         builder_continuity.sync_agents_snapshot()
-        status = builder_continuity.builder_continuity_status(cwd=str(self.project_path))
+        status = builder_continuity.builder_continuity_status()
 
         self.assertTrue(status["agents_snapshot_present"])
         self.assertTrue(status["agents_snapshot_synced"])

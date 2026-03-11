@@ -5,10 +5,8 @@ This repository keeps the minimum durable shape needed to keep the living-world 
 What remains:
 
 - the adapted Hermes-derived operator memory module
-- one builder-continuity adapter that assembles Hermes memory snapshots plus project context
-- one Codex bridge that mirrors Hermes memory into the repo root `AGENTS.md` for new-chat auto-load
+- one small builder-continuity adapter that checks Hermes status and syncs Hermes memory into the repo root `AGENTS.md`
 - one structured todo board
-- project context loading
 - a first-principles architecture note
 - a canon boundary document plus schema checks
 - an indexed `world/` tree for the working foundation

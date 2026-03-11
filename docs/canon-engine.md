@@ -40,7 +40,7 @@ Direct edits to a future canon document are only working drafts until an approve
 
 ## Separation rules
 
-- Builder continuity lives in Hermes memory and project context files. Canon does not treat those as world truth.
+- Builder continuity lives in Hermes memory, the synced `AGENTS.md` snapshot, and repo handoff files. Canon does not treat those as world truth.
 - Runtime can read canon, but runtime beliefs cannot write themselves back into canon.
 - If runtime uncovers something that should become world truth, it has to come back as a new proposed canon change.
 - Transcripts can be evidence for a proposal, but they are never canon by default.

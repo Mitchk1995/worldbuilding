@@ -12,10 +12,10 @@ This is for the builder, not the world.
 
 - Hermes-style durable memory:
   an adapted Hermes-derived memory implementation for very small, curated, persistent notes
-- Project context:
-  instructions that belong in files and get loaded at session start
-- Progress:
-  one human-readable handoff record
+- AGENTS sync bridge:
+  mirrors the Hermes memory snapshot into the repo root `AGENTS.md` for new-chat auto-load
+- Progress and todo:
+  one human-readable handoff record plus one planning surface
 
 This layer exists so the build process keeps its bearings without turning every conversation into permanent sludge.
 It is not the world's memory system.
