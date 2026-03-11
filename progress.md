@@ -11,7 +11,8 @@ The active foundation work is now split into smaller threshold-hub sub-slices so
 Builder continuity now has a verifiable startup adapter instead of relying on copied pieces with no assembly path.
 Codex new-chat continuity now has a real auto-load bridge through a generated root `AGENTS.md` snapshot.
 World foundation has moved out of one growing brief and into a small indexed `world/` tree with short files.
-The threshold hub now has a stronger working shape: public image, internal faces, social pressures, and one first local anchor, while the hub itself stays unnamed on purpose.
+The threshold hub now has a stronger working shape: public image, internal faces, social pressures, one first local anchor, and a first outward direction, while the hub itself stays unnamed on purpose.
+That outward direction is now clear in working design: one large central island gives way to a hard first belt of smaller islands and straits, then to farther larger lands spaced far enough apart to keep the world widening in layers.
 
 What exists on purpose:
 
@@ -25,6 +26,7 @@ What exists on purpose:
 - indexed world foundation files under `world/`
 - selection guidance in `world/foundation/INDEX.md` so future orchestrators can load the right leaf files cheaply
 - a more concrete threshold-hub brief in `world/foundation/threshold-hub.md`
+- a dedicated outward-direction note in `world/foundation/outer-island-belt.md`
 - schema checks in `src/canon/canon-schema.js`
 - no repo-local legacy sqlite stores or browser dump folders
 
@@ -61,13 +63,13 @@ Start from the new `world/` structure rather than expanding `docs/world-foundati
 
 Best next anchor:
 
-- define what the threshold hub points toward first beyond itself
+- define one local institution in the threshold hub that turns the tension between inland legitimacy and lived frontier competence into daily social reality
 
 That next chat should stay small and writing-led:
 
 - keep using the threshold hub as the bridge between center and frontier
 - stay on one sub-slice at a time instead of reopening the whole foundation board
-- avoid locking major regional names too early
+- let the new outward island-belt shape stay background context rather than reopening map design
 - avoid drifting into runtime, NPC-agent design, or canon implementation
 
 Use the result to make the next canon-content slice possible.
@@ -77,4 +79,5 @@ Use the result to make the next canon-content slice possible.
 Keep model lanes swappable. Current thinking is OpenAI/Codex for build and canon work, with a separate future runtime-social lane if needed; GLM-5 via OpenRouter is a current candidate based on user testing, but not a locked foundation decision.
 Reviewer passes on the world-file structure were positive: keep the current indexed markdown layout, keep files short, and avoid custom orchestration machinery until real pain appears.
 Reviewer pass on the threshold-hub draft was also positive: it fits the nearby foundation files, stays small, and only one item feels mildly lock-in prone, the working label `Return Steps`, so treat that name as provisional until regional naming texture is clearer.
-The todo board now reflects this smaller-slice approach: the current active item is the hub's first outward direction, with the hub institution and local-staying slice waiting behind it.
+Reviewer pass on the outward-direction slice was also positive: keep it as a first impression, not a map system, and do not answer the world's deeper cosmological shape yet.
+The todo board now reflects the next narrow slice: the current active item is one hub institution, with local-staying life and first canon content still waiting behind it.

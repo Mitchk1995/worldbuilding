@@ -1,7 +1,7 @@
 {
   "direction": {
-    "current_focus": "Finish the world foundation through small threshold-hub-led slices so canon content can be written on purpose before any simulation work starts.",
-    "why_now": "The clean dependency is still collaborative world design, but the work is easier to steer if the threshold hub is broken into small decisions instead of one broad foundation task.",
+    "current_focus": "Finish the world foundation through small threshold-hub-led slices so the first canon content can be written with a clearer social and geographic frame.",
+    "why_now": "The outward route shape is now clear enough that the next useful decision is one grounded local institution inside the hub instead of more broad world expansion.",
     "last_changed": "2026-03-11"
   },
   "limits": {
@@ -10,7 +10,7 @@
   },
   "delivery": {
     "active_item_ids": [
-      "threshold-hub-beyond"
+      "threshold-hub-institution"
     ],
     "coupled_reason": ""
   },
@@ -52,14 +52,14 @@
     },
     {
       "id": "threshold-hub-beyond",
-      "status": "now",
+      "status": "done",
       "title": "Define what the threshold hub points toward first beyond itself.",
       "why": "The next clean decision is not a full region map but the first outward direction that makes departures from the hub feel pointed instead of abstract.",
       "done_when": "The foundation names the first kind of place, route, or frontier contrast people imagine when they leave the hub, without locking the whole outer world too early."
     },
     {
       "id": "threshold-hub-institution",
-      "status": "next",
+      "status": "now",
       "title": "Define one local institution that embodies the struggle between sponsor legitimacy and lived frontier competence.",
       "why": "A single institution can make the hub's social conflict feel grounded without forcing full political systems too early.",
       "done_when": "One hub institution clearly shows how inland authority and real outward credibility collide."

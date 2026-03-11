@@ -10,6 +10,8 @@ Status: working design, not canon.
   Use when the question is about power, training, awakening, or progression without game mechanics.
 - `geography-and-expansion.md`: the center, routes, frontier layers, and long-horizon scale
   Use when the question is about map feel, travel space, frontier layers, or how the world can widen over time.
+- `outer-island-belt.md`: the first outward belt of hard islands and widening passages beyond the threshold hub
+  Use when the question is about what people imagine first beyond the hub, the early frontier's physical shape, or how the world widens without closing off its future scale.
 - `threshold-hub.md`: the last safe route hub between the old center and the true frontier
   Use when the question is about departure culture, recoveries, rumor flow, or where center life starts to give way to frontier life.
 - `society-and-expeditions.md`: the center's institutions, frontier culture, and rising outer powers
