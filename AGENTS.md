@@ -12,6 +12,7 @@ An agentic worldbuilding system that can eventually place the user inside a livi
 
 - `AGENTS.md`: operating contract
 - `progress.md`: current rebuild state
+- `todo.json`: single planning surface for active and upcoming slices
 - exact Hermes operator memory module: small, curated, durable notes only
 - Project context files: instructions that belong in files, not memory
 
@@ -93,9 +94,9 @@ Before substantial work:
 
 This section is auto-generated from Hermes MEMORY.md and USER.md so new Codex chats get the same small builder-continuity snapshot automatically. Treat it as builder continuity only, never as world canon. Do not edit it by hand.
 
-==============================================
-MEMORY (your personal notes) [36% - 813/2,200 chars]
-==============================================
+══════════════════════════════════════════════
+MEMORY (your personal notes) [36% — 813/2,200 chars]
+══════════════════════════════════════════════
 Use Hermes memory proactively for durable user corrections and workflow rules. Keep planning systems minimal and avoid adding policy sludge.
 §
 Do not conflate builder continuity memory with the future world's separate memory and agent system. Hermes memory work here is only for preserving the build process.
@@ -106,9 +107,9 @@ During world-design work, keep actual world decisions in repo design files and h
 §
 Keep world gameplay and future simulation systems separate from planning and implementation surfaces such as todo, progress, and build notes.
 
-==============================================
-USER PROFILE (who the user is) [71% - 982/1,375 chars]
-==============================================
+══════════════════════════════════════════════
+USER PROFILE (who the user is) [71% — 982/1,375 chars]
+══════════════════════════════════════════════
 The user hates overengineering and expects simple systems with only the minimum necessary moving parts.
 §
 The user wants collaborative, writing-focused world design in plain English, with focused questions only when a choice materially shapes the world. Do not make the user do technical work.

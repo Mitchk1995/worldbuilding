@@ -10,6 +10,8 @@ What remains:
 - one structured todo board
 - project context loading
 - a first-principles redesign document
+- a canon boundary document plus schema checks
+- an indexed `world/` tree for the working foundation
 
 The Hermes module is only for builder continuity. World canon and world runtime are separate future systems.
 

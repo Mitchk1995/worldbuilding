@@ -36,6 +36,7 @@ def build_project_context_prompt(cwd: Optional[str] = None) -> str:
         ["node", str(PROJECT_CONTEXT_SCRIPT), target_cwd],
         capture_output=True,
         text=True,
+        encoding="utf-8",
         check=True,
         cwd=str(ROOT_DIR),
     )
@@ -122,41 +123,19 @@ def builder_continuity_status(cwd: Optional[str] = None) -> Dict[str, object]:
     }
 
 
-def _render_clean_block(title: str, entries: list[str], current: int, limit: int) -> str:
-    pct = int((current / limit) * 100) if limit > 0 else 0
-    body = "\n§\n".join(entries)
-    return (
-        "==============================================\n"
-        f"{title} [{pct}% - {current:,}/{limit:,} chars]\n"
-        "==============================================\n"
-        f"{body}"
-    )
-
-
 def build_agents_snapshot_section() -> str:
     """Render the auto-generated AGENTS snapshot from Hermes memory only."""
     store = MemoryStore()
     store.load_from_disk()
 
     blocks = []
-    if store.memory_entries:
-        blocks.append(
-            _render_clean_block(
-                "MEMORY (your personal notes)",
-                store.memory_entries,
-                store._char_count("memory"),
-                store.memory_char_limit,
-            )
-        )
-    if store.user_entries:
-        blocks.append(
-            _render_clean_block(
-                "USER PROFILE (who the user is)",
-                store.user_entries,
-                store._char_count("user"),
-                store.user_char_limit,
-            )
-        )
+    memory_block = store._render_block("memory", store.memory_entries)
+    if memory_block:
+        blocks.append(memory_block)
+
+    user_block = store._render_block("user", store.user_entries)
+    if user_block:
+        blocks.append(user_block)
 
     snapshot_body = "\n\n".join(blocks) if blocks else "(No Hermes memory snapshot is currently available.)"
     return (

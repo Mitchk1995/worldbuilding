@@ -10,6 +10,7 @@ The board has been corrected so world foundation comes before canon content and 
 The active foundation work is now split into smaller threshold-hub sub-slices so each chat can stay narrower and more directional.
 Builder continuity now has a verifiable startup adapter instead of relying on copied pieces with no assembly path.
 Codex new-chat continuity now has a real auto-load bridge through a generated root `AGENTS.md` snapshot.
+An audit-and-cleanup pass tightened repo instructions, aligned prompt-safety checks, restored exact Hermes-style snapshot rendering, and reduced one known world-file drift surface.
 World foundation has moved out of one growing brief and into a small indexed `world/` tree with short files.
 The threshold hub now has a stronger working shape: public image, internal faces, social pressures, one first local anchor, and a first outward direction, while the hub itself stays unnamed on purpose.
 That outward direction is now clear in working design: one large central island gives way to a hard first belt of smaller islands and straits, then to farther larger lands spaced far enough apart to keep the world widening in layers.
@@ -80,4 +81,5 @@ Keep model lanes swappable. Current thinking is OpenAI/Codex for build and canon
 Reviewer passes on the world-file structure were positive: keep the current indexed markdown layout, keep files short, and avoid custom orchestration machinery until real pain appears.
 Reviewer pass on the threshold-hub draft was also positive: it fits the nearby foundation files, stays small, and only one item feels mildly lock-in prone, the working label `Return Steps`, so treat that name as provisional until regional naming texture is clearer.
 Reviewer pass on the outward-direction slice was also positive: keep it as a first impression, not a map system, and do not answer the world's deeper cosmological shape yet.
+This cleanup pass also made `outer-island-belt.md` the main outward-direction reference so nearby files can stay shorter and drift less.
 The todo board now reflects the next narrow slice: the current active item is one hub institution, with local-staying life and first canon content still waiting behind it.

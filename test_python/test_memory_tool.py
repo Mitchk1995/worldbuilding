@@ -169,7 +169,10 @@ class MemoryToolTestCase(unittest.TestCase):
 
     def test_deduplication_on_load(self):
         mem_file = self.memory_dir / "MEMORY.md"
-        mem_file.write_text("duplicate entry\n§\nduplicate entry\n§\nunique entry", encoding="utf-8")
+        mem_file.write_text(
+            f"duplicate entry{ENTRY_DELIMITER}duplicate entry{ENTRY_DELIMITER}unique entry",
+            encoding="utf-8",
+        )
 
         store = MemoryStore()
         store.load_from_disk()

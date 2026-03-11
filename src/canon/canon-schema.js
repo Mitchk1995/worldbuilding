@@ -26,6 +26,16 @@ function isNonEmptyString(value) {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+function inspectCanonEntryId(id) {
+  if (!isNonEmptyString(id)) {
+    return "Canon entries must be keyed by non-empty stable ids.";
+  }
+  if (id.trim() !== id) {
+    return `Canon entry id '${id}' cannot have leading or trailing whitespace.`;
+  }
+  return null;
+}
+
 function inspectCanonCollectionName(name) {
   if (BLOCKED_CANON_COLLECTIONS.includes(name)) {
     return `'${name}' is explicitly non-canon and cannot live in the canon engine.`;
@@ -79,6 +89,13 @@ export function inspectCanonDocument(document) {
     }
     if (!isPlainObject(value)) {
       findings.push(`Canon collection '${name}' must be an object keyed by stable id.`);
+      continue;
+    }
+    for (const entryId of Object.keys(value)) {
+      const idFinding = inspectCanonEntryId(entryId);
+      if (idFinding) {
+        findings.push(`Canon collection '${name}': ${idFinding}`);
+      }
     }
   }
 

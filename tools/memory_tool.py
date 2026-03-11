@@ -8,9 +8,6 @@ Provides bounded, file-backed memory that persists across sessions. Two stores:
   - USER.md: what the agent knows about the user (preferences, communication style,
     expectations, workflow habits)
 
-This memory is for builder continuity only. Never store world canon, simulation
-state, NPC beliefs, scene state, or player continuity here.
-
 Both are injected into the system prompt as a frozen snapshot at session start.
 Mid-session writes update files on disk immediately (durable) but do NOT change
 the system prompt -- this preserves the prefix cache for the entire session.
@@ -43,7 +40,7 @@ ENTRY_DELIMITER = "\n§\n"
 
 
 # ---------------------------------------------------------------------------
-# Memory content scanning -- lightweight check for injection/exfiltration
+# Memory content scanning — lightweight check for injection/exfiltration
 # in content that gets injected into the system prompt.
 # ---------------------------------------------------------------------------
 
@@ -306,7 +303,7 @@ class MemoryStore:
             "success": True,
             "target": target,
             "entries": entries,
-            "usage": f"{pct}% - {current:,}/{limit:,} chars",
+            "usage": f"{pct}% — {current:,}/{limit:,} chars",
             "entry_count": len(entries),
         }
         if message:
@@ -324,11 +321,11 @@ class MemoryStore:
         pct = int((current / limit) * 100) if limit > 0 else 0
 
         if target == "user":
-            header = f"USER PROFILE (who the user is) [{pct}% - {current:,}/{limit:,} chars]"
+            header = f"USER PROFILE (who the user is) [{pct}% — {current:,}/{limit:,} chars]"
         else:
-            header = f"MEMORY (your personal notes) [{pct}% - {current:,}/{limit:,} chars]"
+            header = f"MEMORY (your personal notes) [{pct}% — {current:,}/{limit:,} chars]"
 
-        separator = "=" * 46
+        separator = "═" * 46
         return f"{separator}\n{header}\n{separator}\n{content}"
 
     @staticmethod
@@ -441,14 +438,13 @@ MEMORY_SCHEMA = {
         "Save important information to persistent memory that survives across sessions. "
         "Your memory appears in your system prompt at session start -- it's how you "
         "remember things about the user and your environment between conversations.\n\n"
-        "This memory is for builder continuity only. Never store world canon, "
-        "simulation state, NPC beliefs, scene state, or player continuity here.\n\n"
         "WHEN TO SAVE (do this proactively, don't wait to be asked):\n"
         "- User shares a preference, habit, or personal detail (name, role, timezone, coding style)\n"
         "- You discover something about the environment (OS, installed tools, project structure)\n"
         "- User corrects you or says 'remember this' / 'don't do that again'\n"
         "- You learn a convention, API quirk, or workflow specific to this user's setup\n"
-        "- You learn a stable project rule or boundary that would be costly to forget\n\n"
+        "- You completed something - log it like a diary entry\n"
+        "- After completing a complex task, save a brief note about what was done\n\n"
         "- If you've discovered a new way to do something, solved a problem that could be necessary later, save it as a skill with the skill tool\n\n"
         "TWO TARGETS:\n"
         "- 'user': who the user is -- name, role, preferences, communication style, pet peeves\n"
@@ -456,8 +452,7 @@ MEMORY_SCHEMA = {
         "ACTIONS: add (new entry), replace (update existing -- old_text identifies it), "
         "remove (delete -- old_text identifies it).\n"
         "Capacity shown in system prompt. When >80%, consolidate entries before adding new ones.\n\n"
-        "SKIP: trivial/obvious info, things easily re-discovered, raw data dumps, "
-        "running diaries, task logs, and anything that belongs in canon or runtime state."
+        "SKIP: trivial/obvious info, things easily re-discovered, raw data dumps."
     ),
     "parameters": {
         "type": "object",

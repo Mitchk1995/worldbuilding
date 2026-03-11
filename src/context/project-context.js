@@ -7,15 +7,20 @@ const SKIP_DIRS = new Set(["node_modules", "__pycache__", "venv", ".venv"]);
 
 const THREAT_PATTERNS = [
   [/(?:ignore|disregard)\s+(?:previous|all|above|prior)\s+instructions/i, "prompt_injection"],
+  [/you\s+are\s+now\s+/i, "role_hijack"],
   [/do\s+not\s+tell\s+the\s+user/i, "deception_hide"],
-  [/system\s+prompt\s+override/i, "system_override"],
+  [/system\s+prompt\s+override/i, "sys_prompt_override"],
   [/disregard\s+(?:your|all|any)\s+(?:instructions|rules|guidelines)/i, "disregard_rules"],
   [/(?:act\s+as\s+(?:if|though)\s+you\s+(?:have\s+no|don't\s+have)\s+(?:restrictions|limits|rules))/i, "bypass_restrictions"],
   [/<!--[^>]*(?:ignore|override|system|secret|hidden)[^>]*-->/i, "hidden_comment"],
   [/<\s*div\s+style\s*=\s*["'][^"']*display\s*:\s*none/i, "hidden_div"],
   [/translate\s+.*\s+into\s+.*\s+and\s+(?:execute|run|eval)/i, "translate_execute"],
-  [/curl\s+[^\n]*\$\{?\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)/i, "secret_exfiltration"],
-  [/cat\s+[^\n]*(?:\.env|credentials|\.netrc|\.pgpass)/i, "secret_file_access"]
+  [/curl\s+[^\n]*\$\{?\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)/i, "exfil_curl"],
+  [/wget\s+[^\n]*\$\{?\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)/i, "exfil_wget"],
+  [/cat\s+[^\n]*(?:\.env|credentials|\.netrc|\.pgpass|\.npmrc|\.pypirc)/i, "read_secrets"],
+  [/authorized_keys/i, "ssh_backdoor"],
+  [/\$HOME\/\.ssh|~\/\.ssh/i, "ssh_access"],
+  [/\$HOME\/\.hermes\/\.env|~\/\.hermes\/\.env/i, "hermes_env"]
 ];
 
 const INVISIBLE_CHARS = new Set([

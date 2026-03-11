@@ -22,6 +22,17 @@ test("canon document rejects blocked non-canon collections", () => {
   assert.ok(findings.some((finding) => finding.includes("explicitly non-canon")));
 });
 
+test("canon document rejects blank or padded stable ids", () => {
+  const document = createEmptyCanonDocument();
+  document.collections.entities["   "] = { name: "Nameless" };
+  document.collections.locations[" location:larkfall "] = { name: "Larkfall" };
+
+  const findings = inspectCanonDocument(document);
+
+  assert.ok(findings.some((finding) => finding.includes("non-empty stable ids")));
+  assert.ok(findings.some((finding) => finding.includes("leading or trailing whitespace")));
+});
+
 test("proposed canon change is valid shape but not yet applicable", () => {
   const change = {
     kind: "canon_change",

@@ -9,7 +9,7 @@ Status: working design, not canon.
 - It is the main exchange point between inland wealth, coastal shipping, and outward crews.
 - It is where the center first starts to realize it does not actually understand the wider age.
 - It should feel more competent and more mixed than the old center, but not yet like the deepest outer world.
-- The default outward image attached to it is a hard belt of smaller islands and straits rather than one nearby destination.
+- The default outward image attached to it is the first outer island belt, not one nearby destination.
 - Tone: outwardly seductive, lively, and socially open, but underneath it runs on weathered competence and quiet grief.
 
 ## Public image

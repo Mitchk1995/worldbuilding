@@ -4,9 +4,9 @@ Status: working design, not canon.
 
 - The old center is organized around one large main island or island-heartland, with major interior cities, river systems, nearby coasts, and access to safer surrounding islands.
 - Near routes and near islands can still resemble the center in safety and familiarity.
-- The first major outward direction beyond the threshold hub is a broken belt of smaller, harder islands, rough straits, and weather-defined passages.
-- Beyond that belt, crossings grow longer and more uneven until some much larger outer lands begin appearing far apart from one another.
-- Farther regions become less familiar, less governable, and less recoverable in uneven layers rather than in a straight danger line.
+- The first major outward direction beyond the threshold hub is the outer island belt described in `outer-island-belt.md`.
+- Beyond that first belt, crossings grow longer and more uneven until larger outer lands begin appearing farther apart from one another.
+- Farther regions should feel less familiar, less governable, and less recoverable in uneven layers rather than in a straight danger line.
 - Distance should often bring strangeness, difference, and new demands instead of only "worse" conditions.
 - The known world includes mixed land and sea travel rather than a pure island-only model.
 - Outer powers rise farther from the center, and truly distant regions may reorder what people think the world even is.
