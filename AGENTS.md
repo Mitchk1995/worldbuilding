@@ -45,7 +45,7 @@ Before substantial work:
 2. Read `progress.md`.
 3. Read `todo.json`.
 4. Run `npm run check:todo`.
-5. Read the Hermes-style operator memory files if they exist.
+5. Treat the auto-generated builder-continuity snapshot in `AGENTS.md` as the default hot memory layer for startup. Read the raw Hermes-style operator memory files only when you are explicitly editing or debugging builder continuity.
 6. Run `python -m tools.builder_continuity status` and read the adapted Hermes-derived memory module, the builder-continuity adapter, and `docs/architecture.md`.
 7. Run `git status --short`.
 8. If the work depends on current platforms, models, or best practices, verify with current sources first.
@@ -78,6 +78,7 @@ Before substantial work:
 - Keep `todo.json` as the single planning surface. Change direction there instead of scattering plans across chat.
 - Keep active work scope only in `todo.json` `delivery.active_item_ids`.
 - Do not treat builder continuity work as world-memory work.
+- Keep the synced `AGENTS.md` snapshot as the default hot builder-memory layer. Do not reread raw memory files by default.
 - Treat each new chat as one small build slice.
 - Do not let one chat carry multiple slices just because the thread already exists.
 - If direction changes mid-slice, update `todo.json` and `progress.md`, commit the clean stopping point, and continue in a fresh chat.
@@ -98,7 +99,7 @@ Before substantial work:
 <!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->
 ## Auto-Generated Builder Continuity Snapshot
 
-This section is auto-generated from Hermes MEMORY.md and USER.md so new Codex chats get the same small builder-continuity snapshot automatically. Treat it as builder continuity only, never as world canon. Do not edit it by hand.
+This section is auto-generated from Hermes MEMORY.md and USER.md so new Codex chats get the same small builder-continuity snapshot automatically. Treat it as the default hot builder-memory layer for startup, backed by the raw memory files. Treat it as builder continuity only, never as world canon. Do not edit it by hand.
 
 ══════════════════════════════════════════════
 MEMORY (your personal notes) [29% — 644/2,200 chars]

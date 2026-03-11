@@ -38,6 +38,7 @@ class BuilderContinuityTestCase(unittest.TestCase):
         agents_text = self.agents_path.read_text(encoding="utf-8")
 
         self.assertIn(builder_continuity.SNAPSHOT_START, agents_text)
+        self.assertIn("default hot builder-memory layer for startup", agents_text)
         self.assertIn("Persist the build continuity only.", agents_text)
         self.assertIn("Prefers plain English.", agents_text)
         self.assertIn(builder_continuity.SNAPSHOT_END, agents_text)

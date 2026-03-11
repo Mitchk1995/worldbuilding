@@ -11,14 +11,15 @@ Build an autonomous worldbuilding system that can later place the user inside a 
 This is for the builder, not the world.
 
 - Hermes-style durable memory:
-  an adapted Hermes-derived file-backed memory implementation for very small, curated, persistent notes
+  an adapted Hermes-derived file-backed backend for very small, curated, persistent builder notes
 - AGENTS sync bridge:
-  mirrors the Hermes memory snapshot into the repo root `AGENTS.md` for new-chat auto-load
+  mirrors a compiled builder-continuity snapshot into the repo root `AGENTS.md` for new-chat auto-load
 - Progress and todo:
   one human-readable handoff record plus one planning surface
 
 This layer exists so the build process keeps its bearings without turning every conversation into permanent sludge.
-In this repo today, that continuity layer is the memory files plus the `AGENTS.md` sync snapshot.
+In this repo today, the raw memory files are the backend source and the synced `AGENTS.md` block is the default hot layer loaded at startup.
+The raw memory files should only be read directly when continuity is being edited or debugged on purpose.
 There is not a separate live Codex session-integration layer here beyond that.
 It is not the world's memory system.
 

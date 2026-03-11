@@ -5,7 +5,8 @@ Date: March 11, 2026
 ## Current state
 
 The repo still has a small operator-continuity surface, but it is now guarded more explicitly.
-Builder continuity in this repo is described honestly as a file-backed Hermes-derived memory store plus the synced root `AGENTS.md` snapshot.
+Builder continuity in this repo is described honestly as raw file-backed Hermes-derived memory plus the synced root `AGENTS.md` hot snapshot.
+Startup should use that synced `AGENTS.md` snapshot by default instead of rereading the raw memory files every chat.
 No separate live Codex session-integration layer for memory was found in the repo itself.
 
 The `world/` tree now has a small structural guard:
@@ -25,11 +26,12 @@ Memory guidance is also tighter now:
 World foundation still lives in a small indexed `world/` tree, and the threshold hub remains the best next content anchor.
 The threshold hub still has its stronger working shape: public image, internal faces, social pressures, one first local anchor, and one first outward direction.
 That outward direction is still clear in working design: one large central island gives way to a hard first belt of smaller islands and straits, then to farther larger lands spaced far enough apart to keep the world widening in layers.
+The current readiness checks are clean: `npm run check:todo`, `npm run check:world`, and `python -m tools.builder_continuity status` all pass with the current small repo surface.
 
 What exists on purpose:
 
 - adapted Hermes-derived file-backed operator memory for builder continuity only
-- one small builder-continuity adapter centered on Hermes memory status and root `AGENTS.md` sync
+- one small builder-continuity adapter centered on Hermes memory status and root `AGENTS.md` hot snapshot sync
 - one validated todo board
 - one `check:world` guard for the indexed world tree
 - the memory-hygiene skill under `skills/memory-hygiene/`
@@ -73,19 +75,21 @@ What is still not built:
 
 ## Next slice
 
-Return to the threshold-hub institution slice now that the cleanup guardrails are in place.
+The next logical slice is still the threshold-hub institution.
 
-Start from `world/INDEX.md`, `world/foundation/INDEX.md`, and `world/foundation/threshold-hub.md`.
+Start from `world/INDEX.md`, `world/foundation/INDEX.md`, `world/foundation/threshold-hub.md`, and `world/foundation/society-and-expeditions.md`.
 
 Best next anchor:
 
-- define one local institution in the threshold hub that turns inland legitimacy and lived frontier competence into daily social reality
+- define one local institution in the threshold hub with one public function, one private truth, and one daily-life effect that turns inland legitimacy and lived frontier competence into daily social reality
 
 That next chat should stay small and writing-led:
 
 - keep using the threshold hub as the bridge between center and frontier
 - stay on one sub-slice at a time instead of reopening the whole foundation board
+- keep the slice to one institution rather than drifting into a full government, route bureaucracy, or faction map
 - let the outward island-belt shape stay background context rather than reopening map design
+- do not finalize the city name, widen the political hierarchy, or promote anything to canon in this slice
 - avoid drifting into runtime, NPC-agent design, or canon implementation
 
 Use the result to make the first canon-content slice easier to write.
@@ -95,7 +99,8 @@ Use the result to make the first canon-content slice easier to write.
 - Run `npm run check:world` whenever `world/` files or indexes change.
 - Keep one `INDEX.md` per populated world directory so parent indexes can stay shallow.
 - If a world Markdown file truly needs to exceed 100 lines, use a tight inline exception like `<!-- world-check: max-lines=118 -->` near the top.
-- The repo’s current memory reality is file-backed `MEMORY.md` and `USER.md` plus synced `AGENTS.md` snapshot continuity. Do not describe it as a richer live repo-integrated memory system unless new wiring is actually added.
+- The repo's current memory reality is file-backed `MEMORY.md` and `USER.md` behind a synced `AGENTS.md` hot snapshot. Do not describe it as a richer live repo-integrated memory system unless new wiring is actually added.
+- The synced `AGENTS.md` block is the default startup memory layer. Read the raw memory files directly only when editing or debugging builder continuity on purpose.
 - The old `src/context` project-context prompt assembly path is gone. Do not re-add a second repo-side injection path unless AGENTS auto-load shows a real failure.
 - Prompt safety still guards Hermes memory entries before they are mirrored into `AGENTS.md`.
 - The continuity wrapper scripts in `tools/` must stay for now because an external automatic continuity trigger still calls them directly. They are compatibility entry points even though the real logic lives in `python -m tools.builder_continuity sync-agents`.

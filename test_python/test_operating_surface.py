@@ -41,6 +41,12 @@ class OperatingSurfaceFreshnessTest(unittest.TestCase):
         agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn("docs/architecture.md", agents_text)
 
+    def test_operating_contract_uses_agents_snapshot_as_default_memory_layer(self):
+        agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertNotIn("Read the Hermes-style operator memory files if they exist.", agents_text)
+        self.assertIn("default hot memory layer for startup", agents_text)
+        self.assertIn("Do not reread raw memory files by default.", agents_text)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -1,7 +1,8 @@
 """Builder continuity utilities.
 
-This keeps the adapted Hermes-derived memory module in sync with the repo root
-AGENTS.md so new Codex chats inherit the same small builder-continuity snapshot.
+This keeps the adapted Hermes-derived file-backed memory store in sync with the
+repo root AGENTS.md so new Codex chats load a small hot builder-continuity
+snapshot by default.
 """
 
 from __future__ import annotations
@@ -71,7 +72,7 @@ def builder_continuity_status() -> Dict[str, object]:
 
 
 def build_agents_snapshot_section() -> str:
-    """Render the auto-generated AGENTS snapshot from Hermes memory only."""
+    """Render the auto-generated AGENTS hot snapshot from Hermes memory only."""
     store = MemoryStore()
     store.load_from_disk()
 
@@ -89,8 +90,9 @@ def build_agents_snapshot_section() -> str:
         f"{SNAPSHOT_START}\n"
         "## Auto-Generated Builder Continuity Snapshot\n\n"
         "This section is auto-generated from Hermes MEMORY.md and USER.md so new Codex chats "
-        "get the same small builder-continuity snapshot automatically. Treat it as builder "
-        "continuity only, never as world canon. Do not edit it by hand.\n\n"
+        "get the same small builder-continuity snapshot automatically. Treat it as the default "
+        "hot builder-memory layer for startup, backed by the raw memory files. Treat it as "
+        "builder continuity only, never as world canon. Do not edit it by hand.\n\n"
         f"{snapshot_body}\n"
         f"{SNAPSHOT_END}"
     )

@@ -9,10 +9,11 @@ Provides bounded, file-backed memory that persists across sessions. Two stores:
     expectations, workflow habits)
 
 When a host agent wires this module into session startup, these files can be
-injected into the system prompt as a frozen snapshot. Mid-session writes update
-files on disk immediately (durable) but do NOT change the current prompt. In
-this repo today, the reliable continuity surface is the file-backed store plus
-the AGENTS.md snapshot sync.
+compiled into a frozen snapshot. Mid-session writes update files on disk
+immediately (durable) but do NOT change the current prompt. In this repo today,
+the default startup continuity layer is the AGENTS.md snapshot compiled from
+this file-backed store. The raw memory files are backend continuity state and
+should not be reread by default every chat.
 
 Entry delimiter: section sign (U+00A7). Entries can be multiline.
 Character limits (not tokens) because char counts are model-independent.

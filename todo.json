@@ -1,7 +1,7 @@
 {
   "direction": {
-    "current_focus": "Return to the threshold-hub institution slice now that the cleanup guardrails are in place.",
-    "why_now": "The world tree and builder-memory surface now have the small guardrails they needed, so the next useful step is a grounded local institution inside the hub.",
+    "current_focus": "Stay on the threshold-hub institution slice and keep it to one grounded social anchor.",
+    "why_now": "The hub already has the right tension in place, and one institution is the smallest next move that can turn that pressure into daily life without opening broader politics too early.",
     "last_changed": "2026-03-11"
   },
   "limits": {
@@ -62,7 +62,7 @@
       "status": "now",
       "title": "Define one local institution that embodies the struggle between sponsor legitimacy and lived frontier competence.",
       "why": "A single institution can make the hub's social conflict feel grounded without forcing full political systems too early.",
-      "done_when": "One hub institution clearly shows how inland authority and real outward credibility collide."
+      "done_when": "One hub institution is defined with one public function, one private truth, and one daily-life effect that clearly shows how inland authority and real outward credibility collide, without expanding into a full government or canon entry."
     },
     {
       "id": "world-guard-memory-hygiene",
