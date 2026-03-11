@@ -52,6 +52,12 @@ Before substantial work:
 9. If Hermes behavior matters, inspect the local Hermes clone recorded in `HERMES_HOME/UPSTREAM_SOURCE.txt` before inventing a replacement.
 10. For planning, architecture, or system-shape changes, get a focused subagent review for overengineering, slop buildup, and simpler alternatives before calling the work clean.
 
+## Continuity compatibility
+
+- `tools/run_codex_continuity_sync.ps1`, `tools/run_codex_continuity_sync.cmd`, and `tools/run_codex_continuity_sync.vbs` are compatibility entry points for an external automatic continuity trigger.
+- They may look redundant because the real logic lives in `python -m tools.builder_continuity sync-agents`, but do not remove them unless that external trigger has been updated and tested against the new path.
+- Treat them as workflow compatibility files, not optional convenience wrappers.
+
 ## Build order
 
 1. Operator continuity:

@@ -10,7 +10,7 @@ The board has been corrected so world foundation comes before canon content and 
 The active foundation work is now split into smaller threshold-hub sub-slices so each chat can stay narrower and more directional.
 Builder continuity now has a verifiable startup adapter instead of relying on copied pieces with no assembly path.
 Codex new-chat continuity now has a real auto-load bridge through a generated root `AGENTS.md` snapshot.
-The cleanup pass now also removes one duplicated continuity load path, moves memory and context safety rules onto one shared source, strengthens the todo guard around active slice ids, and drops old sync-wrapper entry points.
+The cleanup pass now also removes one duplicated continuity load path, moves memory and context safety rules onto one shared source, strengthens the todo guard around active slice ids, and keeps the continuity wrapper entry points in place as external-trigger compatibility files.
 World foundation has moved out of one growing brief and into a small indexed `world/` tree with short files.
 The threshold hub now has a stronger working shape: public image, internal faces, social pressures, one first local anchor, and a first outward direction, while the hub itself stays unnamed on purpose.
 That outward direction is now clear in working design: one large central island gives way to a hard first belt of smaller islands and straits, then to farther larger lands spaced far enough apart to keep the world widening in layers.
@@ -82,5 +82,5 @@ Keep the current indexed world-file layout, keep files short, and avoid orchestr
 Treat the working label `Return Steps` as provisional until regional naming texture is clearer.
 Builder continuity now uses one shared prompt-safety rule file across Hermes memory loading and project-context loading, so future safety changes should start there instead of in two code paths.
 The todo validator now requires at least one active item id and keeps `now` items aligned with `delivery.active_item_ids`, so slice boundaries should stay anchored in one place.
-The old continuity wrapper scripts are gone; use `python -m tools.builder_continuity sync-agents` directly if the snapshot ever needs to be refreshed by hand.
+The continuity wrapper scripts in `tools/` must stay for now because an external automatic continuity trigger still calls them directly. They are compatibility entry points even though the real logic lives in `python -m tools.builder_continuity sync-agents`.
 The current active work should return to the threshold-hub institution slice once cleanup is complete.
