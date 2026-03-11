@@ -1,4 +1,4 @@
-# First-Principles Redesign
+# Worldbuilding Architecture
 
 ## Goal
 
@@ -15,7 +15,7 @@ This is for the builder, not the world.
 - Project context:
   instructions that belong in files and get loaded at session start
 - Progress:
-  one human-readable rebuild record
+  one human-readable handoff record
 
 This layer exists so the build process keeps its bearings without turning every conversation into permanent sludge.
 It is not the world's memory system.
@@ -75,7 +75,7 @@ Do not persist these:
 - broad review bureaucracy
 - dashboards that summarize stale junk
 
-## Build sequence
+## Implementation sequence
 
 1. Keep Hermes-style operator memory working.
 2. Add a canon store with explicit approvals.
@@ -92,3 +92,41 @@ If a new component makes it harder to tell the difference between:
 - runtime beliefs
 
 then it is the wrong component.
+
+## Execution stance
+
+Current platform research does not justify a bigger architecture at this stage.
+It mainly confirms the direction already set here:
+
+- treat Codex and similar agent surfaces as working interfaces, not as the source of world truth
+- keep durable world truth in canon records we control, not in model context or chat history
+- keep runtime state separate from canon even if an agent is the thing reading or updating it
+
+When orchestration work eventually starts, begin with the smallest useful tool boundary:
+
+- read world foundation and canon
+- propose a `canon_change`
+- approve and apply a `canon_change`
+- later, advance runtime state without letting runtime overwrite canon
+
+That keeps the useful part of current agent-system practice:
+
+- explicit tool boundaries
+- reviewable state changes
+- human approval on durable writes
+- room to swap models later
+
+Without importing the parts that are still wrong-shaped for this repo:
+
+- multi-agent orchestration
+- tool discovery catalogs
+- full MCP gateway layers
+- trust scoring or security-cognition systems
+- heavy observability stacks
+
+If real runtime work later proves we need more than this, add it only in response to a concrete pain:
+
+- repeated workflow drift that calls for reusable skills
+- unclear world mutations that need a plain action log
+- provider lock-in that forces a small model-lane note
+- security exposure that comes from real external tool surfaces, not from imagined future scale

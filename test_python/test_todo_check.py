@@ -9,7 +9,7 @@ from tools.todo_check import inspect_todo_board, read_todo_board, validate_todo_
 def valid_board():
     return {
         "direction": {
-            "current_focus": "Keep the rebuild clean.",
+            "current_focus": "Keep the operating surface clean.",
             "why_now": "Planning drift creates slop.",
             "last_changed": "2026-03-10",
         },

@@ -1,6 +1,6 @@
-# Worldbuilding Rebuild
+# Worldbuilding
 
-This repository has been stripped back to the minimum shape needed to rebuild the system cleanly.
+This repository keeps the minimum durable shape needed to keep the living-world platform moving without drift.
 
 What remains:
 
@@ -9,7 +9,7 @@ What remains:
 - one Codex bridge that mirrors Hermes memory into the repo root `AGENTS.md` for new-chat auto-load
 - one structured todo board
 - project context loading
-- a first-principles redesign document
+- a first-principles architecture note
 - a canon boundary document plus schema checks
 - an indexed `world/` tree for the working foundation
 
@@ -20,4 +20,4 @@ Direction changes now belong in the todo board and progress record instead of ge
 Each chat should handle one small slice, stop at a clean point, and leave the next slice readable.
 The board is validated with `npm run check:todo` before normal work.
 
-Everything else is expected to be rebuilt deliberately.
+Everything else should earn its way in.

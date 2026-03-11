@@ -1,22 +1,22 @@
 Be proactive and helpful. Ask for design clarification only when a choice would materially change the system.
 
-# Worldbuilding Rebuild Contract
+# Worldbuilding Operating Contract
 
-This repo is being rebuilt from first principles.
+This repo now runs from a small, first-principles baseline.
 
 ## What we are building
 
 An agentic worldbuilding system that can eventually place the user inside a living world without losing important build context.
 
-## What survives the rebuild
+## What this repo keeps
 
 - `AGENTS.md`: operating contract
-- `progress.md`: current rebuild state
+- `progress.md`: current handoff state
 - `todo.json`: single planning surface for active and upcoming slices
 - adapted Hermes-derived operator memory module: small, curated, durable notes only
 - Project context files: instructions that belong in files, not memory
 
-## What does not survive the rebuild
+## What this repo avoids
 
 - review ledgers
 - failure ledgers
@@ -46,7 +46,7 @@ Before substantial work:
 3. Read `todo.json`.
 4. Run `npm run check:todo`.
 5. Read the Hermes-style operator memory files if they exist.
-6. Run `python -m tools.builder_continuity status --cwd .` and read the adapted Hermes-derived memory module, the builder-continuity adapter, the project context loader, and the redesign document.
+6. Run `python -m tools.builder_continuity status --cwd .` and read the adapted Hermes-derived memory module, the builder-continuity adapter, the project context loader, and `docs/architecture.md`.
 7. Run `git status --short`.
 8. If the work depends on current platforms, models, or best practices, verify with current sources first.
 9. If Hermes behavior matters, inspect the local Hermes clone recorded in `HERMES_HOME/UPSTREAM_SOURCE.txt` before inventing a replacement.
@@ -58,7 +58,7 @@ Before substantial work:
 - They may look redundant because the real logic lives in `python -m tools.builder_continuity sync-agents`, but do not remove them unless that external trigger has been updated and tested against the new path.
 - Treat them as workflow compatibility files, not optional convenience wrappers.
 
-## Build order
+## Implementation order
 
 1. Operator continuity:
    adapted Hermes-derived durable memory plus project context loading for builder continuity while the world is being built.

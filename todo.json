@@ -18,9 +18,9 @@
     {
       "id": "cleanup-audit-fixes",
       "status": "done",
-      "title": "Clean up duplicated continuity loading, stale helper surfaces, and drift between safety checks.",
-      "why": "The rebuild stays trustworthy only if continuity wiring, safety checks, and entry points stay singular and easy to audit.",
-      "done_when": "The builder-continuity prompt no longer double-loads Hermes memory, prompt-safety rules come from one shared source, stale transition files are gone, old sync wrappers are removed, and the todo guard enforces active slice ids."
+      "title": "Clean up duplicated continuity loading, stale helper surfaces, stale transition framing, and drift between safety checks.",
+      "why": "The operating surface stays trustworthy only if continuity wiring, core docs, safety checks, and entry points stay singular and easy to audit.",
+      "done_when": "The builder-continuity prompt no longer double-loads Hermes memory, prompt-safety rules come from one shared source, stale transition files are gone, the old architecture-doc path is gone, old sync wrappers are removed, the core docs use steady-state language, the regression check protects that surface, and the todo guard enforces active slice ids."
     },
     {
       "id": "memory-adaptation",
@@ -33,7 +33,7 @@
       "id": "todo-board",
       "status": "later",
       "title": "Keep one simple todo board that stays truthful as future slices land.",
-      "why": "Planning drift is still how the repo gets sloppy again, even after the rebuild is cleaner.",
+      "why": "Planning drift is still how the repo gets sloppy again, even with a smaller steady-state shape.",
       "done_when": "After each clean stop, the board still has one active slice, a clear next horizon, and a clear later horizon without hidden thread context."
     },
     {
@@ -88,9 +88,9 @@
     {
       "id": "orchestrator-lanes",
       "status": "later",
-      "title": "Define orchestrator model lanes and provider boundaries before runtime work begins.",
-      "why": "The system should stay portable across providers and models. Runtime-social work may want a different lane than build, canon, or coding work.",
-      "done_when": "The repo has a small architecture note describing task lanes, provider boundaries, and swappable model choices without coupling world files to one backend."
+      "title": "Define orchestrator model lanes and the first governed world-tool boundary before runtime work begins.",
+      "why": "The system should stay portable across providers and models, and future agent work should touch world state through a tiny explicit surface instead of through chat drift.",
+      "done_when": "The repo has a small architecture note describing task lanes, provider boundaries, and the first world-tool surface: read canon, propose canon changes, approve or apply canon changes, and later step runtime without coupling world files to one backend."
     },
     {
       "id": "embodiment-layer",
