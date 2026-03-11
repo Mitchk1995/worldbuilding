@@ -18,7 +18,7 @@ def valid_board():
             "max_total_items": 9,
         },
         "delivery": {
-            "active_item_ids": [],
+            "active_item_ids": ["a"],
             "coupled_reason": "",
         },
         "items": [
@@ -114,11 +114,31 @@ class TodoCheckTest(unittest.TestCase):
         findings = validate_todo_board(board)
         self.assertTrue(any("references unknown item 'missing'" in finding for finding in findings))
 
+    def test_validator_requires_an_active_item(self):
+        board = valid_board()
+        board["delivery"]["active_item_ids"] = []
+        findings = validate_todo_board(board)
+        self.assertTrue(any("must contain at least one active item id" in finding for finding in findings))
+
     def test_validator_rejects_non_now_active_items(self):
         board = valid_board()
         board["delivery"]["active_item_ids"] = ["b"]
         findings = validate_todo_board(board)
         self.assertTrue(any("must be in now status" in finding for finding in findings))
+
+    def test_validator_requires_all_now_items_to_be_active(self):
+        board = valid_board()
+        board["items"].append(
+            {
+                "id": "d",
+                "status": "now",
+                "title": "Second active item.",
+                "why": "Still current work.",
+                "done_when": "Done.",
+            }
+        )
+        findings = validate_todo_board(board)
+        self.assertTrue(any("Every now item must appear" in finding for finding in findings))
 
     def test_validator_requires_coupled_reason(self):
         board = valid_board()

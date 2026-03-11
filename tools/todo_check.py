@@ -121,6 +121,12 @@ def validate_todo_board(board):
         if not is_non_empty_string(item.get("done_when")):
             findings.append(f"Item '{item_id or index}' must have a non-empty done_when.")
 
+    now_item_ids = {
+        item_id
+        for item_id, item in item_by_id.items()
+        if item.get("status") == "now"
+    }
+
     if now_count == 0:
         findings.append("Todo board must contain at least one now item.")
     if next_count == 0:
@@ -136,6 +142,10 @@ def validate_todo_board(board):
         )
 
     if active_ids is not None:
+        if len(active_ids) == 0:
+            findings.append(
+                "Todo board delivery.active_item_ids must contain at least one active item id."
+            )
         active_id_set = set()
         for item_id in active_ids:
             if not is_non_empty_string(item_id):
@@ -167,6 +177,19 @@ def validate_todo_board(board):
             findings.append(
                 "Todo board delivery.coupled_reason must be empty unless more than one active item id is selected."
             )
+        if active_id_set != now_item_ids:
+            missing_active = sorted(now_item_ids - active_id_set)
+            extra_active = sorted(active_id_set - now_item_ids)
+            if missing_active:
+                findings.append(
+                    "Every now item must appear in delivery.active_item_ids: "
+                    + ", ".join(missing_active)
+                )
+            if extra_active:
+                findings.append(
+                    "delivery.active_item_ids cannot include items that are not in now status: "
+                    + ", ".join(extra_active)
+                )
 
     return findings
 

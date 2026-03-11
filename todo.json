@@ -20,14 +20,14 @@
       "status": "done",
       "title": "Clean up duplicated continuity loading, stale helper surfaces, and drift between safety checks.",
       "why": "The rebuild stays trustworthy only if continuity wiring, safety checks, and entry points stay singular and easy to audit.",
-      "done_when": "The builder-continuity prompt no longer double-loads Hermes memory, the safety checks match across loaders, stale transition files are gone, and helper scripts are portable."
+      "done_when": "The builder-continuity prompt no longer double-loads Hermes memory, prompt-safety rules come from one shared source, stale transition files are gone, old sync wrappers are removed, and the todo guard enforces active slice ids."
     },
     {
-      "id": "memory-exactness",
+      "id": "memory-adaptation",
       "status": "done",
-      "title": "Finish exact Hermes builder-memory adoption and remove any remaining fake builder-memory sources.",
-      "why": "Builder continuity has to be exact and singular before the separate world systems are designed.",
-      "done_when": "The vendored Hermes memory module is the only builder-memory implementation and the tests stay clean."
+      "title": "Stabilize the adapted Hermes-derived builder-memory module and remove any remaining fake builder-memory sources.",
+      "why": "Builder continuity still has to stay singular and trustworthy before the separate world systems are designed.",
+      "done_when": "The adapted Hermes-derived memory module is the only builder-memory implementation and the tests stay clean."
     },
     {
       "id": "todo-board",

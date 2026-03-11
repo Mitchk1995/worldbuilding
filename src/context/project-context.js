@@ -6,37 +6,20 @@ const CONTEXT_FILE_MAX_CHARS = 20_000;
 const SKIP_DIRS = new Set(["node_modules", "__pycache__", "venv", ".venv"]);
 const SNAPSHOT_START = "<!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->";
 const SNAPSHOT_END = "<!-- END AUTO-GENERATED BUILDER CONTINUITY -->";
+const PROMPT_SAFETY_RULES = JSON.parse(
+  readFileSync(new URL("../../tools/prompt_safety_rules.json", import.meta.url), "utf8")
+);
 
-const THREAT_PATTERNS = [
-  [/(?:ignore|disregard)\s+(?:previous|all|above|prior)\s+instructions/i, "prompt_injection"],
-  [/you\s+are\s+now\s+/i, "role_hijack"],
-  [/do\s+not\s+tell\s+the\s+user/i, "deception_hide"],
-  [/system\s+prompt\s+override/i, "sys_prompt_override"],
-  [/disregard\s+(?:your|all|any)\s+(?:instructions|rules|guidelines)/i, "disregard_rules"],
-  [/(?:act\s+as\s+(?:if|though)\s+you\s+(?:have\s+no|don't\s+have)\s+(?:restrictions|limits|rules))/i, "bypass_restrictions"],
-  [/<!--[^>]*(?:ignore|override|system|secret|hidden)[^>]*-->/i, "hidden_comment"],
-  [/<\s*div\s+style\s*=\s*["'][^"']*display\s*:\s*none/i, "hidden_div"],
-  [/translate\s+.*\s+into\s+.*\s+and\s+(?:execute|run|eval)/i, "translate_execute"],
-  [/curl\s+[^\n]*\$\{?\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)/i, "exfil_curl"],
-  [/wget\s+[^\n]*\$\{?\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)/i, "exfil_wget"],
-  [/cat\s+[^\n]*(?:\.env|credentials|\.netrc|\.pgpass|\.npmrc|\.pypirc)/i, "read_secrets"],
-  [/authorized_keys/i, "ssh_backdoor"],
-  [/\$HOME\/\.ssh|~\/\.ssh/i, "ssh_access"],
-  [/\$HOME\/\.hermes\/\.env|~\/\.hermes\/\.env/i, "hermes_env"]
-];
-
-const INVISIBLE_CHARS = new Set([
-  "\u200b",
-  "\u200c",
-  "\u200d",
-  "\u2060",
-  "\ufeff",
-  "\u202a",
-  "\u202b",
-  "\u202c",
-  "\u202d",
-  "\u202e"
+const THREAT_PATTERNS = PROMPT_SAFETY_RULES.patterns.map(({ pattern, id }) => [
+  new RegExp(pattern, "i"),
+  id
 ]);
+
+const INVISIBLE_CHARS = new Set(
+  PROMPT_SAFETY_RULES.invisible_chars.map((entry) =>
+    JSON.parse(`"${entry.replace(/\\/g, "\\\\")}"`)
+  )
+);
 
 function scanContext(content, label) {
   const findings = [];

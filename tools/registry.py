@@ -1,4 +1,4 @@
-"""Minimal registry shim for vendored Hermes tools."""
+"""Minimal registry shim for adapted Hermes-derived tools."""
 
 
 class ToolRegistry:

@@ -10,14 +10,14 @@ The board has been corrected so world foundation comes before canon content and 
 The active foundation work is now split into smaller threshold-hub sub-slices so each chat can stay narrower and more directional.
 Builder continuity now has a verifiable startup adapter instead of relying on copied pieces with no assembly path.
 Codex new-chat continuity now has a real auto-load bridge through a generated root `AGENTS.md` snapshot.
-The cleanup pass now also removes one duplicated continuity load path, keeps the memory and context safety checks aligned, and makes the continuity helper launchers portable instead of machine-pinned.
+The cleanup pass now also removes one duplicated continuity load path, moves memory and context safety rules onto one shared source, strengthens the todo guard around active slice ids, and drops old sync-wrapper entry points.
 World foundation has moved out of one growing brief and into a small indexed `world/` tree with short files.
 The threshold hub now has a stronger working shape: public image, internal faces, social pressures, one first local anchor, and a first outward direction, while the hub itself stays unnamed on purpose.
 That outward direction is now clear in working design: one large central island gives way to a hard first belt of smaller islands and straits, then to farther larger lands spaced far enough apart to keep the world widening in layers.
 
 What exists on purpose:
 
-- exact Hermes operator memory for builder continuity only
+- adapted Hermes-derived operator memory for builder continuity only
 - one tested builder-continuity prompt assembly path for memory plus project context
 - one Codex sync bridge that mirrors Hermes memory into the root `AGENTS.md`
 - one validated todo board
@@ -78,12 +78,9 @@ Use the result to make the next canon-content slice possible.
 ## Handoff note
 
 Keep model lanes swappable. Current thinking is OpenAI/Codex for build and canon work, with a separate future runtime-social lane if needed; GLM-5 via OpenRouter is a current candidate based on user testing, but not a locked foundation decision.
-Reviewer passes on the world-file structure were positive: keep the current indexed markdown layout, keep files short, and avoid custom orchestration machinery until real pain appears.
-Reviewer pass on the threshold-hub draft was also positive: it fits the nearby foundation files, stays small, and only one item feels mildly lock-in prone, the working label `Return Steps`, so treat that name as provisional until regional naming texture is clearer.
-Reviewer pass on the outward-direction slice was also positive: keep it as a first impression, not a map system, and do not answer the world's deeper cosmological shape yet.
-This cleanup pass also made `outer-island-belt.md` the main outward-direction reference so nearby files can stay shorter and drift less.
-This cleanup slice also removed the old duplicate world-foundation pointer file, so `world/INDEX.md` is now the only entry path for foundation browsing.
-Builder continuity prompt assembly now skips the root `AGENTS.md` snapshot on its context pass, so Hermes memory is no longer loaded twice at startup.
-Prompt-safety rules are aligned again across project context and Hermes memory loading, and the continuity helper launchers now resolve the repo path relative to themselves instead of hardcoding one machine path.
-The operating contract now states the full slice finish rule explicitly: merge to `main`, push `main`, and delete the local and remote work branch every time a slice is done.
-The todo board now reflects the next narrow slice: the current active item is one hub institution, with local-staying life and first canon content still waiting behind it.
+Keep the current indexed world-file layout, keep files short, and avoid orchestration machinery until real pain appears.
+Treat the working label `Return Steps` as provisional until regional naming texture is clearer.
+Builder continuity now uses one shared prompt-safety rule file across Hermes memory loading and project-context loading, so future safety changes should start there instead of in two code paths.
+The todo validator now requires at least one active item id and keeps `now` items aligned with `delivery.active_item_ids`, so slice boundaries should stay anchored in one place.
+The old continuity wrapper scripts are gone; use `python -m tools.builder_continuity sync-agents` directly if the snapshot ever needs to be refreshed by hand.
+The current active work should return to the threshold-hub institution slice once cleanup is complete.

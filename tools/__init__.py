@@ -1,1 +1,1 @@
-"""Minimal tools package for the vendored Hermes memory module."""
+"""Minimal tools package for the adapted Hermes-derived memory module."""

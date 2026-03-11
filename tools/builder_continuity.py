@@ -1,6 +1,6 @@
 """Builder continuity bootstrap utilities.
 
-This bridges the vendored Hermes memory module and the project-context loader
+This bridges the adapted Hermes-derived memory module and the project-context loader
 so the repo can assemble the same startup prompt pieces Hermes injects at
 session start: MEMORY.md, USER.md, and context files.
 """

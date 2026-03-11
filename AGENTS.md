@@ -13,7 +13,7 @@ An agentic worldbuilding system that can eventually place the user inside a livi
 - `AGENTS.md`: operating contract
 - `progress.md`: current rebuild state
 - `todo.json`: single planning surface for active and upcoming slices
-- exact Hermes operator memory module: small, curated, durable notes only
+- adapted Hermes-derived operator memory module: small, curated, durable notes only
 - Project context files: instructions that belong in files, not memory
 
 ## What does not survive the rebuild
@@ -46,7 +46,7 @@ Before substantial work:
 3. Read `todo.json`.
 4. Run `npm run check:todo`.
 5. Read the Hermes-style operator memory files if they exist.
-6. Run `python -m tools.builder_continuity status --cwd .` and read the vendored Hermes memory module, the builder-continuity adapter, the project context loader, and the redesign document.
+6. Run `python -m tools.builder_continuity status --cwd .` and read the adapted Hermes-derived memory module, the builder-continuity adapter, the project context loader, and the redesign document.
 7. Run `git status --short`.
 8. If the work depends on current platforms, models, or best practices, verify with current sources first.
 9. If Hermes behavior matters, inspect the local Hermes clone recorded in `HERMES_HOME/UPSTREAM_SOURCE.txt` before inventing a replacement.
@@ -55,7 +55,7 @@ Before substantial work:
 ## Build order
 
 1. Operator continuity:
-   exact Hermes durable memory plus project context loading for builder continuity while the world is being built.
+   adapted Hermes-derived durable memory plus project context loading for builder continuity while the world is being built.
 2. Canon engine:
    reviewable world facts, timelines, entities, and approved changes.
 3. Simulation runtime:

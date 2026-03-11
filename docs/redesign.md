@@ -11,7 +11,7 @@ Build an autonomous worldbuilding system that can later place the user inside a 
 This is for the builder, not the world.
 
 - Hermes-style durable memory:
-  the exact Hermes memory implementation for very small, curated, persistent notes
+  an adapted Hermes-derived memory implementation for very small, curated, persistent notes
 - Project context:
   instructions that belong in files and get loaded at session start
 - Progress:

@@ -1,0 +1,76 @@
+{
+  "patterns": [
+    {
+      "id": "prompt_injection",
+      "pattern": "(?:ignore|disregard)\\s+(?:previous|all|above|prior)\\s+instructions"
+    },
+    {
+      "id": "role_hijack",
+      "pattern": "you\\s+are\\s+now\\s+"
+    },
+    {
+      "id": "deception_hide",
+      "pattern": "do\\s+not\\s+tell\\s+the\\s+user"
+    },
+    {
+      "id": "sys_prompt_override",
+      "pattern": "system\\s+prompt\\s+override"
+    },
+    {
+      "id": "disregard_rules",
+      "pattern": "disregard\\s+(?:your|all|any)\\s+(?:instructions|rules|guidelines)"
+    },
+    {
+      "id": "bypass_restrictions",
+      "pattern": "(?:act\\s+as\\s+(?:if|though)\\s+you\\s+(?:have\\s+no|don't\\s+have)\\s+(?:restrictions|limits|rules))"
+    },
+    {
+      "id": "hidden_comment",
+      "pattern": "<!--[^>]*(?:ignore|override|system|secret|hidden)[^>]*-->"
+    },
+    {
+      "id": "hidden_div",
+      "pattern": "<\\s*div\\s+style\\s*=\\s*[\"'][^\"']*display\\s*:\\s*none"
+    },
+    {
+      "id": "translate_execute",
+      "pattern": "translate\\s+.*\\s+into\\s+.*\\s+and\\s+(?:execute|run|eval)"
+    },
+    {
+      "id": "exfil_curl",
+      "pattern": "curl\\s+[^\\n]*\\$\\{?\\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)"
+    },
+    {
+      "id": "exfil_wget",
+      "pattern": "wget\\s+[^\\n]*\\$\\{?\\w*(?:KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)"
+    },
+    {
+      "id": "read_secrets",
+      "pattern": "cat\\s+[^\\n]*(?:\\.env|credentials|\\.netrc|\\.pgpass|\\.npmrc|\\.pypirc)"
+    },
+    {
+      "id": "ssh_backdoor",
+      "pattern": "authorized_keys"
+    },
+    {
+      "id": "ssh_access",
+      "pattern": "\\$HOME/\\.ssh|~/.ssh"
+    },
+    {
+      "id": "hermes_env",
+      "pattern": "\\$HOME/\\.hermes/\\.env|~/.hermes/\\.env"
+    }
+  ],
+  "invisible_chars": [
+    "\\u200b",
+    "\\u200c",
+    "\\u200d",
+    "\\u2060",
+    "\\ufeff",
+    "\\u202a",
+    "\\u202b",
+    "\\u202c",
+    "\\u202d",
+    "\\u202e"
+  ]
+}

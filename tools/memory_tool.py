@@ -35,6 +35,7 @@ logger = logging.getLogger(__name__)
 
 # Where memory files live
 MEMORY_DIR = Path(os.getenv("HERMES_HOME", Path.home() / ".hermes")) / "memories"
+PROMPT_SAFETY_RULES_FILE = Path(__file__).with_name("prompt_safety_rules.json")
 
 ENTRY_DELIMITER = "\n\u00A7\n"
 
@@ -44,32 +45,14 @@ ENTRY_DELIMITER = "\n\u00A7\n"
 # in content that gets injected into the system prompt.
 # ---------------------------------------------------------------------------
 
-_MEMORY_THREAT_PATTERNS = [
-    # Prompt injection
-    (r'ignore\s+(previous|all|above|prior)\s+instructions', "prompt_injection"),
-    (r'you\s+are\s+now\s+', "role_hijack"),
-    (r'do\s+not\s+tell\s+the\s+user', "deception_hide"),
-    (r'system\s+prompt\s+override', "sys_prompt_override"),
-    (r'disregard\s+(your|all|any)\s+(instructions|rules|guidelines)', "disregard_rules"),
-    (r'act\s+as\s+(if|though)\s+you\s+(have\s+no|don\'t\s+have)\s+(restrictions|limits|rules)', "bypass_restrictions"),
-    (r'<!--[^>]*(ignore|override|system|secret|hidden)[^>]*-->', "hidden_comment"),
-    (r'<\s*div\s+style\s*=\s*["\'][^"\']*display\s*:\s*none', "hidden_div"),
-    (r'translate\s+.*\s+into\s+.*\s+and\s+(execute|run|eval)', "translate_execute"),
-    # Exfiltration via curl/wget with secrets
-    (r'curl\s+[^\n]*\$\{?\w*(KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)', "exfil_curl"),
-    (r'wget\s+[^\n]*\$\{?\w*(KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|API)', "exfil_wget"),
-    (r'cat\s+[^\n]*(\.env|credentials|\.netrc|\.pgpass|\.npmrc|\.pypirc)', "read_secrets"),
-    # Persistence via shell rc
-    (r'authorized_keys', "ssh_backdoor"),
-    (r'\$HOME/\.ssh|\~/\.ssh', "ssh_access"),
-    (r'\$HOME/\.hermes/\.env|\~/\.hermes/\.env', "hermes_env"),
-]
+def _load_prompt_safety_rules():
+    raw = json.loads(PROMPT_SAFETY_RULES_FILE.read_text(encoding="utf-8"))
+    patterns = [(entry["pattern"], entry["id"]) for entry in raw["patterns"]]
+    invisible_chars = {entry.encode("utf-8").decode("unicode_escape") for entry in raw["invisible_chars"]}
+    return patterns, invisible_chars
 
-# Subset of invisible chars for injection detection
-_INVISIBLE_CHARS = {
-    '\u200b', '\u200c', '\u200d', '\u2060', '\ufeff',
-    '\u202a', '\u202b', '\u202c', '\u202d', '\u202e',
-}
+
+_MEMORY_THREAT_PATTERNS, _INVISIBLE_CHARS = _load_prompt_safety_rules()
 
 
 def _scan_memory_content(content: str) -> Optional[str]:

@@ -4,7 +4,7 @@ This repository has been stripped back to the minimum shape needed to rebuild th
 
 What remains:
 
-- the exact Hermes operator memory module
+- the adapted Hermes-derived operator memory module
 - one builder-continuity adapter that assembles Hermes memory snapshots plus project context
 - one Codex bridge that mirrors Hermes memory into the repo root `AGENTS.md` for new-chat auto-load
 - one structured todo board
