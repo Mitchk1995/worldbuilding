@@ -1,16 +1,16 @@
 {
   "direction": {
-    "current_focus": "Define a small world foundation brief so canon content can be written on purpose before any simulation work starts.",
-    "why_now": "The board pointed at simulation too early. The next clean dependency is collaborative world design: premise, tone, tensions, reality rules, era, and the first important people, groups, and places.",
-    "last_changed": "2026-03-10"
+    "current_focus": "Finish the world foundation through small threshold-hub-led slices so canon content can be written on purpose before any simulation work starts.",
+    "why_now": "The clean dependency is still collaborative world design, but the work is easier to steer if the threshold hub is broken into small decisions instead of one broad foundation task.",
+    "last_changed": "2026-03-11"
   },
   "limits": {
     "max_now": 3,
-    "max_total_items": 9
+    "max_total_items": 11
   },
   "delivery": {
     "active_item_ids": [
-      "world-foundation"
+      "threshold-hub-beyond"
     ],
     "coupled_reason": ""
   },
@@ -44,11 +44,32 @@
       "done_when": "Runtime state can evolve scene by scene while canon stays authoritative."
     },
     {
-      "id": "world-foundation",
+      "id": "threshold-hub-shape",
+      "status": "done",
+      "title": "Give the threshold hub a clean first shape: public image, internal faces, social pressures, and one local anchor.",
+      "why": "The threshold hub is the best first concrete place for showing the transition from center life to frontier life without naming the whole outer world too early.",
+      "done_when": "The hub reads like a place instead of a placeholder and still stays clearly in working-design territory."
+    },
+    {
+      "id": "threshold-hub-beyond",
       "status": "now",
-      "title": "Define the world foundation before any simulation work: premise, tone, tensions, reality rules, era, and the first important people, groups, and places.",
-      "why": "Canon needs a strong foundation before the repo starts storing world content or shaping a living runtime.",
-      "done_when": "A small world-foundation brief exists, reflects collaborative decisions, and leaves some areas intentionally unknown."
+      "title": "Define what the threshold hub points toward first beyond itself.",
+      "why": "The next clean decision is not a full region map but the first outward direction that makes departures from the hub feel pointed instead of abstract.",
+      "done_when": "The foundation names the first kind of place, route, or frontier contrast people imagine when they leave the hub, without locking the whole outer world too early."
+    },
+    {
+      "id": "threshold-hub-institution",
+      "status": "next",
+      "title": "Define one local institution that embodies the struggle between sponsor legitimacy and lived frontier competence.",
+      "why": "A single institution can make the hub's social conflict feel grounded without forcing full political systems too early.",
+      "done_when": "One hub institution clearly shows how inland authority and real outward credibility collide."
+    },
+    {
+      "id": "threshold-hub-local-life",
+      "status": "next",
+      "title": "Define who stays in the threshold hub and what a non-expedition future there can look like.",
+      "why": "The setting needs slower local futures to feel alive, not like failure states beside the frontier.",
+      "done_when": "The hub has a clear sense of ordinary belonging, staying, romance, work, and local adulthood beyond departure culture."
     },
     {
       "id": "canon-content",
