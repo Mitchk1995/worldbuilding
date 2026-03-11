@@ -58,6 +58,13 @@
       "done_when": "The first canon entities, places, groups, rules, and timeline anchors are drafted in a reviewable shape."
     },
     {
+      "id": "orchestrator-lanes",
+      "status": "later",
+      "title": "Define orchestrator model lanes and provider boundaries before runtime work begins.",
+      "why": "The system should stay portable across providers and models. Runtime-social work may want a different lane than build, canon, or coding work.",
+      "done_when": "The repo has a small architecture note describing task lanes, provider boundaries, and swappable model choices without coupling world files to one backend."
+    },
+    {
       "id": "embodiment-layer",
       "status": "later",
       "title": "Build the player-facing layer for entering the living world.",

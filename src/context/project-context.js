@@ -109,10 +109,7 @@ export function discoverProjectContext(cwd = process.cwd()) {
       .filter(Boolean)
       .join("\n\n");
     if (content) {
-      sections.push({
-        kind: "AGENTS.md",
-        content: truncateContent(content, "AGENTS.md")
-      });
+      sections.push(truncateContent(content, "AGENTS.md"));
     }
   }
 
@@ -152,24 +149,22 @@ export function discoverProjectContext(cwd = process.cwd()) {
     );
   }
   if (cursorSections.length > 0) {
-    sections.push({
-      kind: "cursor",
-      content: truncateContent(cursorSections.join("\n\n"), "cursor rules")
-    });
+    sections.push(truncateContent(cursorSections.join("\n\n"), ".cursorrules"));
   }
 
+  const hermesHome = process.env.HERMES_HOME ?? join(homedir(), ".hermes");
   const soulPath =
     [join(rootDir, "SOUL.md"), join(rootDir, "soul.md")].find((candidate) => existsSync(candidate)) ??
-    [join(homedir(), ".worldbuilding", "SOUL.md"), join(homedir(), ".worldbuilding", "soul.md")].find(
+    [join(hermesHome, "SOUL.md"), join(hermesHome, "soul.md")].find(
       (candidate) => existsSync(candidate)
     );
   if (soulPath) {
     const raw = maybeReadFile(soulPath);
     if (raw) {
-      sections.push({
-        kind: "SOUL.md",
-        content: truncateContent(scanContext(raw, relative(rootDir, soulPath)), "SOUL.md")
-      });
+      const soulContent = truncateContent(scanContext(raw, "SOUL.md"), "SOUL.md");
+      sections.push(
+        `## SOUL.md\n\nIf SOUL.md is present, embody its persona and tone. Avoid stiff, generic replies; follow its guidance unless higher-priority instructions override it.\n\n${soulContent}`
+      );
     }
   }
 
@@ -182,9 +177,5 @@ export function buildProjectContextPrompt(cwd = process.cwd()) {
     return "";
   }
 
-  const body = sections
-    .map((section) => `## ${section.kind}\n\n${section.content}`)
-    .join("\n\n");
-
-  return `# Project Context\n\nThe following project context files were discovered and should be followed:\n\n${body}`;
+  return `# Project Context\n\nThe following project context files have been loaded and should be followed:\n\n${sections.join("\n")}`;
 }

@@ -35,5 +35,16 @@ test("project context blocks injected AGENTS content", () => {
   const sections = discoverProjectContext(cwd);
 
   assert.equal(sections.length, 1);
-  assert.match(sections[0].content, /\[BLOCKED:/);
+  assert.match(sections[0], /\[BLOCKED:/);
+});
+
+test("project context includes SOUL guidance when a local SOUL file exists", () => {
+  const cwd = createTempProject();
+  writeFileSync(join(cwd, "AGENTS.md"), "Root instructions.");
+  writeFileSync(join(cwd, "SOUL.md"), "Be plainspoken and warm.");
+
+  const prompt = buildProjectContextPrompt(cwd);
+
+  assert.match(prompt, /If SOUL\.md is present, embody its persona and tone/);
+  assert.match(prompt, /Be plainspoken and warm\./);
 });

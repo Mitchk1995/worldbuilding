@@ -45,10 +45,10 @@ Before substantial work:
 3. Read `todo.json`.
 4. Run `npm run check:todo`.
 5. Read the Hermes-style operator memory files if they exist.
-6. Read the vendored Hermes memory module, the project context loader, and the redesign document.
+6. Run `python -m tools.builder_continuity status --cwd .` and read the vendored Hermes memory module, the builder-continuity adapter, the project context loader, and the redesign document.
 7. Run `git status --short`.
 8. If the work depends on current platforms, models, or best practices, verify with current sources first.
-9. If Hermes behavior matters, inspect the local Hermes clone before inventing a replacement.
+9. If Hermes behavior matters, inspect the local Hermes clone recorded in `HERMES_HOME/UPSTREAM_SOURCE.txt` before inventing a replacement.
 10. For planning, architecture, or system-shape changes, get a focused subagent review for overengineering, slop buildup, and simpler alternatives before calling the work clean.
 
 ## Build order
@@ -78,3 +78,46 @@ Before substantial work:
 - Rewrite `progress.md` to the current handoff state. Do not turn it into an append-only log.
 - Keep PRs small by mapping each change slice to one active item id, or two ids only when they are explicitly coupled.
 - Once a clean item is tested and committed, merge it to `main` immediately and delete the work branch. Do not leave finished work stranded on a side branch.
+
+## World file pathing
+
+- World knowledge belongs under `world/`, not in Hermes memory.
+- `world/INDEX.md` is the root entry point for world files.
+- `world/foundation/` holds pre-canon world design that is still being shaped.
+- Future canon, runtime, and player-facing world files should stay in separate sibling paths under `world/` instead of mixing together.
+- Keep world files small and easy to scan. Crossing 100 lines should be rare and should need a clear reason.
+- Prefer one subject per file and update the nearest index whenever a world file is added, renamed, or moved.
+
+<!-- BEGIN AUTO-GENERATED BUILDER CONTINUITY -->
+## Auto-Generated Builder Continuity Snapshot
+
+This section is auto-generated from Hermes MEMORY.md and USER.md so new Codex chats get the same small builder-continuity snapshot automatically. Treat it as builder continuity only, never as world canon. Do not edit it by hand.
+
+==============================================
+MEMORY (your personal notes) [36% - 813/2,200 chars]
+==============================================
+Use Hermes memory proactively for durable user corrections and workflow rules. Keep planning systems minimal and avoid adding policy sludge.
+§
+Do not conflate builder continuity memory with the future world's separate memory and agent system. Hermes memory work here is only for preserving the build process.
+§
+Repo-local legacy sqlite stores and browser dump folders were purged. Builder continuity now lives in Hermes memory plus the repo's todo, progress, and context files.
+§
+During world-design work, keep actual world decisions in repo design files and handoffs, not in Hermes memory. Preserve player-facing mystery without storing secret lore in operator memory.
+§
+Keep world gameplay and future simulation systems separate from planning and implementation surfaces such as todo, progress, and build notes.
+
+==============================================
+USER PROFILE (who the user is) [71% - 982/1,375 chars]
+==============================================
+The user hates overengineering and expects simple systems with only the minimum necessary moving parts.
+§
+The user wants collaborative, writing-focused world design in plain English, with focused questions only when a choice materially shapes the world. Do not make the user do technical work.
+§
+The user wants eventual play as themself, with real-time passage and some exercise integration, but with little to no explicit game mechanics or stat-sheet feel.
+§
+When a world-design choice could expose spoilers, frame questions indirectly so the user can shape the world without seeing hidden truths. Do not railroad them, but do protect mystery with careful wording.
+§
+Keep world knowledge out of Hermes memory. The user wants world files to stay highly organized, easy to navigate, and scalable without forcing large context loads.
+§
+When the user is unsure how to structure worldbuilding, choose the next best-practice design anchor instead of asking them to architect the process.
+<!-- END AUTO-GENERATED BUILDER CONTINUITY -->
